@@ -32,10 +32,9 @@ Variable([
         
         dict(name="showNodes", ui="CheckBox", args=dict(value=True)),
         
-        dict(name="nodeShape", ui="RadioGroup", args=dict(titles=['Circle', 'Rectangle', 'Line'], isVertical=True)),
-        # dict(name="nodeShape", ui="RadioGroup", args=dict(items=['Circle', 'Rectangle'])),
+        dict(name="nodeShape", ui="RadioGroup", args=dict(titles=['Circle', 'Rectangle', 'Cross'], isVertical=True), value = 0),
         
-        dict(name="nodeSize", ui="Slider", args=dict(value=5, minValue=1, maxValue=25)),
+        dict(name="nodeSize", ui="Slider", args=dict(value=5, minValue=1, maxValue=10)),
         
         dict(name="onCurveStroke", ui="ColorWell"),
         dict(name="onCurveColor", ui="ColorWell"),
@@ -47,11 +46,13 @@ Variable([
         
         dict(name="displayCoordinates", ui="CheckBox"),
         
-        dict(name="exportAsPDF", ui="CheckBox")
+        dict(name="exportAs", ui="RadioGroup", args=dict(titles=['PDF', 'SVG', 'PNG'], isVertical=True))
         
         ], globals())
 
 s = nodeSize
+
+print(nodeShape)
 
 ########## END VARIABLES ##########
 
@@ -61,18 +62,18 @@ s = nodeSize
 glyphsToProcess = []
 
 # Current glyph
-# if glyphSelection == 0:
-#     glyphsToProcess = [CurrentGlyph()]
+if glyphSelection == 0:
+    glyphsToProcess = [CurrentGlyph()]
     
 # All glyphs (with contours)
-# elif glyphSelection == 1:
-#     glyphsToProcess = [glyph for glyph in font if glyph.contours]
+elif glyphSelection == 1:
+    glyphsToProcess = [glyph for glyph in font if glyph.contours]
 
 # Process selected glyph/s
-# for glyph in glyphsToProcess:
+for glyph in glyphsToProcess:
     # Skip empty or None glyphs
-    # if glyph is None or not glyph.contours:
-    #     continue
+    if glyph is None or not glyph.contours:
+        continue
 ##########
 
 for glyph in fontz:
@@ -142,18 +143,8 @@ for glyph in fontz:
                         
                     elif nodeShape == 2:
                         
-                        angle = atan2(point.y, point.x)
-                        
-                        linx1 = point.x - cos(angle) * s
-                        liny1 = point.y - sin(angle) * s 
-                        
-                        linx2 = point.x + cos(angle) * s
-                        liny2 = point.y + sin(angle) * s
-                        
-                        # oval(linx1-5, liny1-5, 10, 10)
-                        # oval(linx2-5, liny2-5, 10, 10)
-                        
-                        line((linx1, liny1), (linx2, liny2))
+                        line((point.x-s, point.y-s), (point.x+s, point.y+s))
+                        line((point.x-s, point.y+s), (point.x+s, point.y-s))
                 
                 # shape[nodeShape](point.x-s, point.y-s, s*2, s*2)
                 
@@ -166,5 +157,23 @@ name = f"{fontz.info.familyName}-{fontz.info.styleName}"
 fontName = name.replace(" ","-")
 # print(fontName)
 
-if exportAsPDF:
-    saveImage(f"GlyphPresenter-{fontName}.pdf")   
+if exportAs == 0:
+    
+    output_folder = "GlyphShowcaser-Output"
+    
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+    
+    if glyphSelection == 0:
+         saveImage(f"{output_folder}/GlyphShowcaser-{fontName}-{glyph.name}.pdf")  
+    
+    if glyphSelection == 1:  
+         saveImage(f"{output_folder}/GlyphShowcaser-{fontName}.pdf") 
+    
+    saveImage(f"GlyphShowcaser-{fontName}.pdf")
+    
+if exportAs == 1:
+    saveImage(f"GlyphShowcaser-{fontName}.pdf")   
+    
+if exportAs == 2:
+    saveImage(f"GlyphPresenter-{fontName}.pdf")      
