@@ -17,8 +17,6 @@ height = (fontz.info.ascender + margin) + -(fontz.info.descender - (margin / 2))
 
 ########## BEGIN VARIABLES ##########
 
-#''CAUTION: CHECKING THE BOX "REMOVE OVERLAP" REMOVES OVERLAP IN THE GLYPH ITSELF, NOT ONLY THE PREVIEW'''
-
 Variable([
     
         # dict(name="GlyphSelection", ui="RadioGroup", args=dict(titles=['Current Glyph', 'All Glyphs'], isVertical=True))
@@ -34,7 +32,7 @@ Variable([
         
         dict(name="showNodes", ui="CheckBox", args=dict(value=True)),
         
-        dict(name="nodeShape", ui="RadioGroup", args=dict(titles=['Circle', 'Rectangle'], isVertical=True)),
+        dict(name="nodeShape", ui="RadioGroup", args=dict(titles=['Circle', 'Rectangle', 'Line'], isVertical=True)),
         # dict(name="nodeShape", ui="RadioGroup", args=dict(items=['Circle', 'Rectangle'])),
         
         dict(name="nodeSize", ui="Slider", args=dict(value=5, minValue=1, maxValue=25)),
@@ -53,11 +51,7 @@ Variable([
         
         ], globals())
 
-
-
 s = nodeSize
-
-# print(nodeShape)
 
 ########## END VARIABLES ##########
 
@@ -76,7 +70,7 @@ glyphsToProcess = []
 
 # Process selected glyph/s
 # for glyph in glyphsToProcess:
-    #Skip empty or None glyphs
+    # Skip empty or None glyphs
     # if glyph is None or not glyph.contours:
     #     continue
 ##########
@@ -111,13 +105,16 @@ for glyph in fontz:
     
         for bPoint in contour.bPoints:
             # print(bPoint.anchor, bPoint.bcpIn, bPoint.bcpOut)
-            with savedState():
-                x, y = bPoint.anchor
-                translate(x, y)
-                stroke(0)
-                strokeWidth(1)
-                line ((0,0), bPoint.bcpIn)
-                line ((0,0), bPoint.bcpOut)
+            
+            if showNodes:
+                
+                with savedState():
+                    x, y = bPoint.anchor
+                    translate(x, y)
+                    stroke(0)
+                    strokeWidth(1)
+                    line ((0,0), bPoint.bcpIn)
+                    line ((0,0), bPoint.bcpOut)
     
         for segment in contour:
             # print(segment)
@@ -127,19 +124,36 @@ for glyph in fontz:
                 fill(1,.5,.5)
                 # s = 10
                 
-                if point.type == "offcurve":
-                    stroke(offCurveStroke)
-                    fill(offCurveColor)
-                else:
-                    stroke(onCurveStroke)
-                    strokeWidth(1)
-                    fill(onCurveColor)
+                if showNodes:
+                
+                    if point.type == "offcurve":
+                        stroke(offCurveStroke)
+                        fill(offCurveColor)
+                    else:
+                        stroke(onCurveStroke)
+                        strokeWidth(1)
+                        fill(onCurveColor)
   
-                if nodeShape == 0:
-                    oval(point.x-s, point.y-s, s*2, s*2)
+                    if nodeShape == 0:
+                        oval(point.x-s, point.y-s, s*2, s*2)
                     
-                if nodeShape == 1:
-                    rect(point.x-s, point.y-s, s*2, s*2)
+                    elif nodeShape == 1:
+                        rect(point.x-s, point.y-s, s*2, s*2)
+                        
+                    elif nodeShape == 2:
+                        
+                        angle = atan2(point.y, point.x)
+                        
+                        linx1 = point.x - cos(angle) * s
+                        liny1 = point.y - sin(angle) * s 
+                        
+                        linx2 = point.x + cos(angle) * s
+                        liny2 = point.y + sin(angle) * s
+                        
+                        # oval(linx1-5, liny1-5, 10, 10)
+                        # oval(linx2-5, liny2-5, 10, 10)
+                        
+                        line((linx1, liny1), (linx2, liny2))
                 
                 # shape[nodeShape](point.x-s, point.y-s, s*2, s*2)
                 
@@ -147,19 +161,6 @@ for glyph in fontz:
                     stroke(None)
                     fill(0)
                     text(f"{point.x}, {point.y}",(point.x,point.y-s-10),align="center",)
-    
-    # font("Helvetica")
-    # text (glyphName, (10,10))
-        
-        
-# while t:
-#     newPage("A4")
-#     x, y, w, h = margin, margin, width()-margin*2, height()-margin*2
-#     t = textBox(t,(x, y, w, h))
-#     # fill(None)
-#     # stroke(0)
-#     # lineDash(5, 5)
-#     # rect(x, y, w, h)
 
 name = f"{fontz.info.familyName}-{fontz.info.styleName}"
 fontName = name.replace(" ","-")
