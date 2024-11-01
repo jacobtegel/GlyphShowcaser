@@ -1,8 +1,9 @@
 import AppKit
+import os
 from datetime import datetime
 from mojo.roboFont import CurrentFont, CurrentGlyph
 from drawBot import *
-import os
+
 
 time = datetime.now().strftime('%Y-%m-%d-%H-%M:')
 
@@ -11,15 +12,14 @@ margin = 100
 t = FormattedString()
 t.fontSize(72)
 
-fontz = CurrentFont()
+font = CurrentFont()
 
-height = (fontz.info.ascender + margin) + -(fontz.info.descender - (margin / 2))
+height = (font.info.ascender + margin) + -(font.info.descender - (margin / 2))
 
 ########## BEGIN VARIABLES ##########
 
 Variable([
-    
-        # dict(name="GlyphSelection", ui="RadioGroup", args=dict(titles=['Current Glyph', 'All Glyphs'], isVertical=True))
+
         dict(name="glyphSelection", ui="RadioGroup", args=dict(titles=['Current Glyph', 'All Glyphs'], isVertical=True)),
     
         dict(name="backgroundColor", ui="ColorWell", args=dict(color=AppKit.NSColor.colorWithSRGBRed_green_blue_alpha_(1, 1, 1, 0))), 
@@ -52,7 +52,7 @@ Variable([
 
 s = nodeSize
 
-print(nodeShape)
+# print(nodeShape)
 
 ########## END VARIABLES ##########
 
@@ -76,14 +76,14 @@ for glyph in glyphsToProcess:
         continue
 ##########
 
-for glyph in fontz:
+# for glyph in font:
     
     newPage(glyph.width + margin, height)
     
     fill(backgroundColor)
     rect(0, 0, glyph.width + margin, height + margin)
     
-    translate(margin/2, -fontz.info.descender + (margin / 2))
+    translate(margin/2, -font.info.descender + (margin / 2))
     
     fill(glyphColor)
     
@@ -153,7 +153,7 @@ for glyph in fontz:
                     fill(0)
                     text(f"{point.x}, {point.y}",(point.x,point.y-s-10),align="center",)
 
-name = f"{fontz.info.familyName}-{fontz.info.styleName}"
+name = f"{font.info.familyName}-{font.info.styleName}"
 fontName = name.replace(" ","-")
 # print(fontName)
 
