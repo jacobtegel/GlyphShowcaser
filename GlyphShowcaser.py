@@ -1,7 +1,9 @@
+# Drawbot
+
 import AppKit
 import os
 from datetime import datetime
-from mojo.roboFont import CurrentFont, CurrentGlyph
+from mojo.roboFont import CurrentFont, CurrentGlyph, RGlyph
 from drawBot import *
 
 
@@ -26,7 +28,7 @@ Variable([
 
         dict(name="glyphColor", ui="ColorWell", args=dict(color=AppKit.NSColor.colorWithSRGBRed_green_blue_alpha_(1, 1, 1, 0))),
         
-        dict(name="outline", ui="CheckBox", args=dict(value=True)),
+        dict(name="glyphOutline", ui="CheckBox", args=dict(value=True)),
         
         dict(name="outlineColor", ui="ColorWell"),
         
@@ -41,8 +43,10 @@ Variable([
         
         dict(name="offCurveStroke", ui="ColorWell"),
         dict(name="offCurveColor", ui="ColorWell"),
+        
+        dict(name="bcpLineStroke", ui="ColorWell"),
                 
-        # dict(name="removePathOverlap", ui="CheckBox"),
+        dict(name="removeOverlap", ui="CheckBox"),
         
         dict(name="displayCoordinates", ui="CheckBox"),
         
@@ -76,8 +80,13 @@ for glyph in glyphsToProcess:
         continue
 ##########
 
-# for glyph in font:
+     
+    g = glyph.getLayer('foreground')
     
+    # create orhpan child of g
+    c = g.copy()     
+ 
+            
     newPage(glyph.width + margin, height)
     
     fill(backgroundColor)
@@ -87,42 +96,38 @@ for glyph in glyphsToProcess:
     
     fill(glyphColor)
     
-    if outline:
+    if glyphOutline:
         stroke(outlineColor)
         strokeWidth(1)
     
-    pen = glyph.getPen()
+    pen = c.getPen()
         
-    # if removePathOverlap:
-    #     glyph.removeOverlap()
+    if removeOverlap:
+        c.removeOverlap()
         
-    drawGlyph(glyph)
-    
-    # drawPath(B)
-        
-    for contour in glyph:
-        
-        # # print(contour)
-    
+    drawGlyph(c)
+            
+    for contour in c:
+            
         for bPoint in contour.bPoints:
-            # print(bPoint.anchor, bPoint.bcpIn, bPoint.bcpOut)
             
             if showNodes:
                 
                 with savedState():
                     x, y = bPoint.anchor
                     translate(x, y)
-                    stroke(0)
+                    stroke(bcpLineStroke)
                     strokeWidth(1)
                     line ((0,0), bPoint.bcpIn)
                     line ((0,0), bPoint.bcpOut)
     
         for segment in contour:
-            # print(segment)
+           
             for point in segment:
-                # print(point.x, point.y, point.type, point.smooth)
+                
                 stroke(None)
                 fill(1,.5,.5)
+                
                 # s = 10
                 
                 if showNodes:
@@ -155,6 +160,7 @@ for glyph in glyphsToProcess:
 
 name = f"{font.info.familyName}-{font.info.styleName}"
 fontName = name.replace(" ","-")
+
 # print(fontName)
 
 if exportAs == 0:
@@ -173,7 +179,18 @@ if exportAs == 0:
     saveImage(f"GlyphShowcaser-{fontName}.pdf")
     
 if exportAs == 1:
-    saveImage(f"GlyphShowcaser-{fontName}.pdf")   
+    
+    output_folder = "GlyphShowcaser-Output"
+    
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+    
+    if glyphSelection == 0:
+        saveImage(f"{output_folder}/GlyphShowcaser-{fontName}-{glyph.name}.svg")
+    
+    if glyphSelection == 1:
+        saveImage(f"{output_folder}/GlyphShowcaser-{fontName}-.svg")
+       
     
 if exportAs == 2:
-    saveImage(f"GlyphPresenter-{fontName}.pdf")      
+    saveImage(f"GlyphPresenter-{fontName}.png")      
