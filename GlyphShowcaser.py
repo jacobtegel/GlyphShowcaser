@@ -2,6 +2,8 @@
 
 import AppKit
 import os
+import ezui
+
 from datetime import datetime
 from mojo.roboFont import CurrentFont, CurrentGlyph, RGlyph
 from drawBot import *
@@ -18,11 +20,45 @@ font = CurrentFont()
 
 height = (font.info.ascender + margin) + -(font.info.descender - (margin / 2))
 
+name = f"{font.info.familyName}-{font.info.styleName}"
+
+fontName = name.replace(" ","-")
+
+########## BEGIN EZUI ##########
+
+# class Controller(ezui.WindowController):
+
+#     def build(self):
+#         content = """
+#         Showcase your Drawings.
+#         ---X---
+#         * ColorWell
+#         ( Button go for it ) @goButton
+#         """
+#         self.w = ezui.EZWindow(
+#             title="Showcaser",
+#             content=content,
+#             controller=self
+#         )
+
+#     def started(self):
+#         self.w.open()
+    
+#     def goButtonCallback(self, sender):
+#         print("hit")
+
+# Controller()
+
+########## END EZUI ##########
+
+
 ########## BEGIN VARIABLES ##########
 
 Variable([
 
         dict(name="glyphSelection", ui="RadioGroup", args=dict(titles=['Current Glyph', 'All Glyphs'], isVertical=True)),
+        
+        dict(name="margin", ui="Slider", args=dict(value=100, minValue=0, maxValue=500)),
     
         dict(name="backgroundColor", ui="ColorWell", args=dict(color=AppKit.NSColor.colorWithSRGBRed_green_blue_alpha_(1, 1, 1, 0))), 
 
@@ -80,14 +116,12 @@ for glyph in glyphsToProcess:
         continue
 ##########
 
-     
     g = glyph.getLayer('foreground')
     
     # create orhpan child of g
     c = g.copy()     
- 
-            
-    newPage(glyph.width + margin, height)
+
+    newPage(glyph.width + margin, height + margin)
     
     fill(backgroundColor)
     rect(0, 0, glyph.width + margin, height + margin)
@@ -99,16 +133,16 @@ for glyph in glyphsToProcess:
     if glyphOutline:
         stroke(outlineColor)
         strokeWidth(1)
-    
-    pen = c.getPen()
-        
+   
     if removeOverlap:
         c.removeOverlap()
-        
+
+    pen = c.getPen()
+       
     drawGlyph(c)
-            
+           
     for contour in c:
-            
+
         for bPoint in contour.bPoints:
             
             if showNodes:
@@ -158,8 +192,6 @@ for glyph in glyphsToProcess:
                     fill(0)
                     text(f"{point.x}, {point.y}",(point.x,point.y-s-10),align="center",)
 
-name = f"{font.info.familyName}-{font.info.styleName}"
-fontName = name.replace(" ","-")
 
 # print(fontName)
 
