@@ -173,34 +173,32 @@ for glyph in glyphsToProcess:
 
 # print(fontName)
 
+if font is not None and font.path:
+    font_path = os.path.dirname(font.path) #Get Folder in which the font is
+    output_folder = f"{font_path}/Showcaser-Output" # create output folder inside of that folder
+
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+
+# print(font_path)
+# print(output_folder)
+# print(time)
+
 if exportAs == 0:
-    
-    output_folder = "GlyphShowcaser-Output"
-    
-    if not os.path.exists(output_folder):
-        os.makedirs(output_folder)
-    
+
     if glyphSelection == 0:
-         saveImage(f"{output_folder}/GlyphShowcaser-{fontName}-{glyph.name}.pdf")  
+         saveImage(f"{output_folder}/{time}-GlyphShowcaser-{fontName}-{glyph.name}.pdf")  
     
-    if glyphSelection == 1:  
-         saveImage(f"{output_folder}/GlyphShowcaser-{fontName}.pdf") 
-    
-    saveImage(f"GlyphShowcaser-{fontName}.pdf")
-    
+    elif glyphSelection == 1:  
+         saveImage(f"{output_folder}/{time}-GlyphShowcaser-{fontName}.pdf") 
+        
 if exportAs == 1:
-    
-    output_folder = "GlyphShowcaser-Output"
-    
-    if not os.path.exists(output_folder):
-        os.makedirs(output_folder)
-    
+
     if glyphSelection == 0:
-        saveImage(f"{output_folder}/GlyphShowcaser-{fontName}-{glyph.name}.svg")
+        saveImage(f"{output_folder}/{time}-GlyphShowcaser-{fontName}-{glyph.name}.svg")
     
-    if glyphSelection == 1:
-        saveImage(f"{output_folder}/GlyphShowcaser-{fontName}-.svg")
+    elif glyphSelection == 1:
+        saveImage(f"{output_folder}/{time}-GlyphShowcaser-{fontName}-.svg")
        
-    
 if exportAs == 2:
-    saveImage(f"GlyphPresenter-{fontName}.png")      
+    saveImage(f"{output_folder}/{time}-GlyphShowcaser-{fontName}-{glyph.name}.png")      
