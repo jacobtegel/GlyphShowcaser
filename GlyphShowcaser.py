@@ -24,30 +24,8 @@ name = f"{font.info.familyName}-{font.info.styleName}"
 
 fontName = name.replace(" ","-")
 
+
 ########## BEGIN EZUI ##########
-
-# class Controller(ezui.WindowController):
-
-#     def build(self):
-#         content = """
-#         Showcase your Drawings.
-#         ---X---
-#         * ColorWell
-#         ( Button go for it ) @goButton
-#         """
-#         self.w = ezui.EZWindow(
-#             title="Showcaser",
-#             content=content,
-#             controller=self
-#         )
-
-#     def started(self):
-#         self.w.open()
-    
-#     def goButtonCallback(self, sender):
-#         print("hit")
-
-# Controller()
 
 ########## END EZUI ##########
 
