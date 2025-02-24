@@ -1,3 +1,6 @@
-# glyphShowcaser
-Tool to showcase your glyphs in Drawbot in Robofont <br>
-You can change colors, Node Shapes, Coordinates and more!
+# Showcaser <br>
+
+Showcase your Drawings! <br>
+
+Tool to showcase your Glyphs in Robofonts Drawbot extension. <br>
+You can change colors, Node Shapes and more!
