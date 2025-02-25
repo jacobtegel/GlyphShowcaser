@@ -52,13 +52,15 @@ Variable([
         
         dict(name="nodeSize", ui="Slider", args=dict(value=5, minValue=1, maxValue=10)),
         
+        dict(name="nodeRatio", ui="Slider", args=dict(value=1, minValue=0, maxValue=1)),
+        
         dict(name="onCurveStroke", ui="ColorWell"),
         dict(name="onCurveColor", ui="ColorWell"),
         
         dict(name="offCurveStroke", ui="ColorWell"),
         dict(name="offCurveColor", ui="ColorWell"),
         
-        dict(name="bcpLineStroke", ui="ColorWell"),
+        dict(name="handleStroke", ui="ColorWell"),
                 
         dict(name="removeOverlap", ui="CheckBox"),
         
@@ -69,6 +71,7 @@ Variable([
         ], globals())
 
 s = nodeSize
+r = nodeRatio * nodeSize
 
 # print(nodeShape)
 
@@ -128,7 +131,7 @@ for glyph in glyphsToProcess:
                 with savedState():
                     x, y = bPoint.anchor
                     translate(x, y)
-                    stroke(bcpLineStroke)
+                    stroke(handleStroke)
                     strokeWidth(1)
                     line ((0,0), bPoint.bcpIn)
                     line ((0,0), bPoint.bcpOut)
@@ -153,15 +156,30 @@ for glyph in glyphsToProcess:
                         fill(onCurveColor)
   
                     if nodeShape == 0:
-                        oval(point.x-s, point.y-s, s*2, s*2)
+                        
+                        if point.type == "offcurve":
+                            oval(point.x-r, point.y-r, r*2, r*2)
+                            
+                        else:
+                            oval(point.x-s, point.y-s, s*2, s*2)
                     
                     elif nodeShape == 1:
-                        rect(point.x-s, point.y-s, s*2, s*2)
+                        
+                        if point.type == "offcurve":
+                            rect(point.x-r, point.y-r, r*2, r*2)
+                            
+                        else:
+                            rect(point.x-s, point.y-s, s*2, s*2)
                         
                     elif nodeShape == 2:
                         
-                        line((point.x-s, point.y-s), (point.x+s, point.y+s))
-                        line((point.x-s, point.y+s), (point.x+s, point.y-s))
+                        if point.type == "offcurve":
+                            line((point.x-r, point.y-r), (point.x+r, point.y+r))
+                            line((point.x-r, point.y+r), (point.x+r, point.y-r))
+                            
+                        else:
+                            line((point.x-s, point.y-s), (point.x+s, point.y+s))
+                            line((point.x-s, point.y+s), (point.x+s, point.y-s))
                 
                 # shape[nodeShape](point.x-s, point.y-s, s*2, s*2)
                 
