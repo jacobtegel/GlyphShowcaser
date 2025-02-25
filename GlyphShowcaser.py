@@ -18,7 +18,7 @@ t.fontSize(72)
 
 font = CurrentFont()
 
-height = (font.info.ascender + margin) + -(font.info.descender - (margin / 2))
+fontHeight = (font.info.ascender + margin) + -(font.info.descender - (margin / 2))
 
 name = f"{font.info.familyName}-{font.info.styleName}"
 
@@ -37,6 +37,8 @@ Variable([
         dict(name="glyphSelection", ui="RadioGroup", args=dict(titles=['Current Glyph', 'All Glyphs'], isVertical=True)),
         
         dict(name="margin", ui="Slider", args=dict(value=100, minValue=0, maxValue=500)),
+    
+        dict(name="artboardHeight", ui="RadioGroup", args=dict(titles=['Font Height', 'Glyph Height'], isVertical=True)),
     
         dict(name="backgroundColor", ui="ColorWell", args=dict(color=AppKit.NSColor.colorWithSRGBRed_green_blue_alpha_(1, 1, 1, 0))), 
 
@@ -97,17 +99,32 @@ for glyph in glyphsToProcess:
         continue
 ##########
 
+    # print(glyph.bounds)
+    glyphHeight = abs(glyph.bounds[1]-glyph.bounds[3])
+    # print(glyphHeight)
+    
+    if artboardHeight == 0:
+        height = (font.info.ascender + margin) + -(font.info.descender - (margin / 2))
+
+    else:
+        height = (glyphHeight + margin)
+        
+    newPage(glyph.width + margin, height)
+    
     g = glyph.getLayer('foreground')
     
     # create orhpan child of g
     c = g.copy()     
 
-    newPage(glyph.width + margin, height + margin)
+    
     
     fill(backgroundColor)
     rect(0, 0, glyph.width + margin, height + margin)
     
-    translate(margin/2, -font.info.descender + (margin / 2))
+    if artboardHeight == 0:
+        translate(margin/2, -font.info.descender + (margin / 2))
+    else:
+        translate(margin/2, margin / 2)
     
     fill(glyphColor)
     
