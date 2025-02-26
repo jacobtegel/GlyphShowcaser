@@ -1,125 +1,125 @@
 import ezui
+from mojo.extensions import getExtensionDefault, setExtensionDefault, removeExtensionDefault
 
-interfaceWidth = 350
+extensionDefaultKey = "Jacobs.amazing.showcaser.settings"
+
+removeExtensionDefault(extensionDefaultKey)
 
 class ShowcaserInterface(ezui.WindowController):
 
     def build(self):
         content = """
-        !!! Showcase your Drawings!
-        ---
-        
-        * VerticalStack
-        > * TwoColumnForm @formOne
-        >> : Glyph Selection:        
-        >> ( ) Current Glyph @glyphSelection
-        # >> ( ) Selected glyphs
-        >> ( ) All Glyphs
-        >> --- 
-        >> : Margins:
-        >> ---X--- [_](±) @margin
-        >> ---
-        >> : Background Color:
-        >> * ColorWell @backgroundColor
-        >> : Glyph Color:
-        >> * ColorWell @glyphColor
-        >> ---
-        >> : Glyph Outline:
-        >> [X] @glyphOutline
-        >> : Outline Color:
-        >> * ColorWell @outlineColor
+        = TwoColumnForm 
+        !§ Showcase your Drawings!
+        : Glyph Selection:        
+        (X) Current Glyph @glyphSelection
+        ( ) Selected glyphs
+        ( ) All Glyphs      
         
         ---
+
+        : Margins:
+        ---X--- [_](±) @margin
         
-        * VerticalStack 
-        > * TwoColumnForm @formTwo
-        >> : Show Nodes:
-        >> [X] @showNodes
-        >> : Node Shape:
-        >> (X) Circle @nodeShape"
-        >> ( ) Rectangle
-        >> ( ) Cross
-        >> : Node Size:
-        >> ---X--- [_](±) @nodeSize
+        : Artboard Height:
+        (X) Font Height @artboardHeight 
+        ( ) Glyph Height
         
         ---
+         
+        :Background Color:
+        * ColorWell @backgroundColor
         
-        * VerticalStack 
-        > * TwoColumnForm @formThree
-        >> : Oncurve Stroke Color:
-        >> * ColorWell @onCurveStroke
-        >> : Oncurve Fill Color:
-        >> * ColorWell @onCurveColor
-        >> : Offcurve Stroke Color:
-        >> * ColorWell @offCurveStroke
-        >> : Offcurve Fill Color:
-        >> * ColorWell @offCurveColor
-        >> : Handle Stroke Color:
-        >> * ColorWell @bcpLineStroke
+        : Glyph Color:
+        * ColorWell @glyphColor
+        
+        : Glyph Outline:
+        [X] @glyphOutline
+        
+        : Outline Color:
+        * ColorWell @outlineColor
+        
+        --- 
+        
+        : Show Nodes:
+        [X] @showNodes
+        
+        : Node Shape:
+        (X) Circle @nodeShape
+        ( ) Rectangle
+        ( ) Cross
+        
+        : Node Size:
+        ---X--- [_](±) @nodeSize
+        : Node Size Ratio:
+        ---X--- [_](±) @nodeSizeRatio
         
         ---
         
-        * VerticalStack 
-        > * TwoColumnForm @formFour
-        >> : Remove Overlap:
-        >> [X] @removeOverlap
-        >> : Display Coordinates:
-        >> [ ] @displayCoordinates
+        : Oncurve Stroke Color:
+        * ColorWell @onCurveStroke
+        
+        : Oncurve Fill Color:
+        * ColorWell @onCurveColor
+        
+        : Offcurve Stroke Color:
+        * ColorWell @offCurveStroke
+        
+        : Offcurve Fill Color:
+        * ColorWell @offCurveColor
+        
+        : Handle Stroke Color:
+        * ColorWell @handleStroke
         
         ---
         
-        * VerticalStack 
-        > * TwoColumnForm @formFive
-        >> : Export as:
-        >> * HorizontalStack
-        >>> (PDF) @exportPdf
-        >>> (SVG) @exportSvg
-        >>> (PNG) @exportPng        
+        : Remove Overlap:
+        [X] @removeOverlap
+        
+        : Display Coordinates:
+        [ ] @displayCoordinates
+        
+        : Coordinates Color:
+        * ColorWell @coordinatesColor
+        
+        ---
+        
+        : Format:
+        (X) PDF  @exportFormat
+        ( ) SVG
+        ( ) PNG
+        =---=
+                
+        (Export) @export        
         """
+  
         
         descriptionData = dict(
-                            
-            formOne = dict(
-                titleColumnWidth = interfaceWidth/2,
-                itemColumnWidth = interfaceWidth/2
+            content=dict(
+                titleColumnWidth=150,
+                itemColumnWidth=200
             ),
-            
-            formTwo = dict(
-                titleColumnWidth = interfaceWidth/2,
-                itemColumnWidth = interfaceWidth/2   
-            ),
-            
-            formThree = dict(
-                titleColumnWidth = interfaceWidth/2,
-                itemColumnWidth = interfaceWidth/2   
-            ),
-            
-            formFour = dict(
-                titleColumnWidth = interfaceWidth/2,
-                itemColumnWidth = interfaceWidth/2   
-            ),
-            
-            formFive = dict(
-                titleColumnWidth = interfaceWidth/2,
-                itemColumnWidth = interfaceWidth/2   
-            ),
-
-            accordion=dict(
-                closed=False,
-            ),
-            
+                                        
             margin=dict(
                 minValue=0,
                 maxValue=500,
                 value=100
             ),
-            
+                        
             nodeSize=dict(
                 minValue=1,
                 maxValue=10,
                 value=5,
                 tickMarks=10,
-                stopOnTickMarks=True
+                stopOnTickMarks=False
+            ),
+            
+            nodeSizeRatio=dict(
+                minValue=0,
+                maxValue=1,
+                value=1,
+                tickMarks=10,
+                stopOnTickMarks=False
             ),
         )
         
@@ -129,8 +129,69 @@ class ShowcaserInterface(ezui.WindowController):
             descriptionData=descriptionData,
             controller=self
         )
+        
+        self.w.setItemValues(getExtensionDefault(extensionDefaultKey, dict()))
 
     def started(self):
         self.w.open()
+    
+    def glyphSelectionCallback(self, sender):
+        print(sender.get())
+        
+    def marginCallback(self, sender):    
+        print(sender.get())
+        
+    def backgroundColorCallback(self, sender):
+        print(sender.get())
+            
+    def glyphColorCallback(self, sender):
+        print(sender.get())
+        
+    def glyphOutlineCallback(self, sender):
+        print(sender.get())
+        
+    def outlineColorCallback(self, sender):
+        print(sender.get())
+        
+    def showNodesCallback(self, sender):
+        print(sender.get())
+        
+    def nodeShapeCallback(self, sender):
+        print(sender.get())
+        
+    def nodeSizeCallback(self, sender):
+        print(sender.get())
+        
+    def nodeSizeRatioCallback(self, sender):
+        print(sender.get())
+        
+    def onCurveStrokeCallback(self, sender):
+        print(sender.get())
+        
+    def onCurveColorCallback(self, sender):
+        print(sender.get())
+        
+    def offCurveStrokeCallback(self, sender):
+        print(sender.get())
+        
+    def offCurveColorCallback(self, sender):
+        print(sender.get()) 
+           
+    def handleStrokeCallback(self, sender):
+        print(sender.get())
+        
+    def removeOverlapCallback(self, sender):
+        print(sender.get())
+        
+    def displayCoordinatesCallback(self, sender):
+        print(sender.get())
+        
+    def exportFormatCallback(self, sender):
+        print(sender.get())
+        
+    def exportCallback(self, sender):
+        values = self.w.getItemValues()
+        setExtensionDefault(extensionDefaultKey, values)
+        print(self.w.getItemValues())
 
 ShowcaserInterface()
