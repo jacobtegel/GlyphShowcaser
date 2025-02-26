@@ -68,6 +68,8 @@ Variable([
         
         dict(name="displayCoordinates", ui="CheckBox"),
         
+        dict(name="coordinatesColor", ui="ColorWell"),
+        
         dict(name="exportAs", ui="RadioGroup", args=dict(titles=['PDF', 'SVG', 'PNG'], isVertical=True))
         
         ], globals())
@@ -202,7 +204,7 @@ for glyph in glyphsToProcess:
                 
                 if displayCoordinates:
                     stroke(None)
-                    fill(0)
+                    fill(coordinatesColor)
                     text(f"{point.x}, {point.y}",(point.x,point.y-s-10),align="center",)
 
 
