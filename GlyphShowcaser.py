@@ -50,7 +50,9 @@ Variable([
         
         dict(name="showNodes", ui="CheckBox", args=dict(value=True)),
         
-        dict(name="nodeShape", ui="RadioGroup", args=dict(titles=['Circle', 'Rectangle', 'Cross'], isVertical=True), value = 0),
+        dict(name="oncurveNodeShape", ui="RadioGroup", args=dict(titles=['Circle', 'Rectangle', 'Cross'], isVertical=True), value = 0),
+        
+        dict(name="offcurveNodeShape", ui="RadioGroup", args=dict(titles=['Circle', 'Rectangle', 'Cross'], isVertical=True), value = 0),
         
         dict(name="nodeSize", ui="Slider", args=dict(value=5, minValue=1, maxValue=10)),
         
@@ -107,7 +109,6 @@ for glyph in glyphsToProcess:
     
     if artboardHeight == 0:
         height = (font.info.ascender + margin) + -(font.info.descender - (margin / 2))
-
     else:
         height = (glyphHeight + margin)
         
@@ -126,7 +127,7 @@ for glyph in glyphsToProcess:
     if artboardHeight == 0:
         translate(margin/2, -font.info.descender + (margin / 2))
     else:
-        translate(margin/2, margin / 2)
+        translate(margin/2, -glyph.bounds[1] + margin / 2)
     
     fill(glyphColor)
     
@@ -159,8 +160,8 @@ for glyph in glyphsToProcess:
            
             for point in segment:
                 
-                stroke(None)
-                fill(1,.5,.5)
+                # stroke(None)
+                # fill(1,.5,.5)
                 
                 # s = 10
                 
@@ -169,37 +170,39 @@ for glyph in glyphsToProcess:
                     if point.type == "offcurve":
                         stroke(offCurveStroke)
                         fill(offCurveColor)
+                        
+                        if offcurveNodeShape == 0:
+                        
+                            oval(point.x-r, point.y-r, r*2, r*2)
+                    
+                        elif offcurveNodeShape == 1:
+                        
+                            rect(point.x-r, point.y-r, r*2, r*2)
+                        
+                        elif offcurveNodeShape == 2:
+                        
+                            line((point.x-r, point.y-r), (point.x+r, point.y+r))
+                            line((point.x-r, point.y+r), (point.x+r, point.y-r))
+                            
                     else:
                         stroke(onCurveStroke)
                         strokeWidth(1)
                         fill(onCurveColor)
   
-                    if nodeShape == 0:
+                        if oncurveNodeShape == 0:
                         
-                        if point.type == "offcurve":
-                            oval(point.x-r, point.y-r, r*2, r*2)
-                            
-                        else:
                             oval(point.x-s, point.y-s, s*2, s*2)
                     
-                    elif nodeShape == 1:
+                        elif oncurveNodeShape == 1:
                         
-                        if point.type == "offcurve":
-                            rect(point.x-r, point.y-r, r*2, r*2)
-                            
-                        else:
                             rect(point.x-s, point.y-s, s*2, s*2)
                         
-                    elif nodeShape == 2:
+                        elif oncurveNodeShape == 2:
                         
-                        if point.type == "offcurve":
-                            line((point.x-r, point.y-r), (point.x+r, point.y+r))
-                            line((point.x-r, point.y+r), (point.x+r, point.y-r))
-                            
-                        else:
                             line((point.x-s, point.y-s), (point.x+s, point.y+s))
                             line((point.x-s, point.y+s), (point.x+s, point.y-s))
-                
+                            
+                                            
                 # shape[nodeShape](point.x-s, point.y-s, s*2, s*2)
                 
                 if displayCoordinates:
