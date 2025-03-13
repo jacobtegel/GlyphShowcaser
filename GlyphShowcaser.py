@@ -34,7 +34,7 @@ fontName = name.replace(" ","-")
 
 Variable([
 
-        dict(name="glyphSelection", ui="RadioGroup", args=dict(titles=['Current Glyph', 'All Glyphs'], isVertical=True)),
+        dict(name="glyphSelection", ui="RadioGroup", args=dict(titles=['Current Glyph', 'Selected Glyphs', 'All Glyphs'], isVertical=True)),
         
         dict(name="margin", ui="Slider", args=dict(value=100, minValue=0, maxValue=500)),
     
@@ -91,10 +91,17 @@ glyphsToProcess = []
 # Current glyph
 if glyphSelection == 0:
     glyphsToProcess = [CurrentGlyph()]
+
+# Selected Glyphs    
+elif glyphSelection == 1:
+    # print(font.selection)
+    glyphsToProcess = [font[glyphName] for glyphName in font.selection]
     
 # All glyphs (with contours)
-elif glyphSelection == 1:
-    glyphsToProcess = [glyph for glyph in font if glyph.contours]
+elif glyphSelection == 2:
+    glyphsToProcess = [glyph for glyph in font]
+    
+print(glyphsToProcess)
 
 # Process selected glyph/s
 for glyph in glyphsToProcess:
