@@ -70,8 +70,8 @@ for glyph in glyphsToProcess:
     else:
         height = (glyphHeight + margin)
     
-    pwidth = font.info.unitsPerEm + margin
-    pheight = font.info.ascender - font.info.descender + margin
+    pwidth = glyph.width + margin
+    pheight = height
     
     newPage(pwidth, pheight)
     
