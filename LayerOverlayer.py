@@ -27,6 +27,8 @@ Variable([
         dict(name="artboardHeight", ui="RadioGroup", args=dict(titles=['Font Height', 'Glyph Height'], isVertical=True)),
         
         dict(name="backgroundColor", ui="ColorWell", args=dict(color=AppKit.NSColor.colorWithSRGBRed_green_blue_alpha_(1, 1, 1, 0))),
+
+        dict(name="useLayerColors", ui="CheckBox", args=dict(value=True)),
     
         dict(name="removeOverlap", ui="CheckBox", args=dict(value=True)),
     
@@ -103,9 +105,12 @@ for glyph in glyphsToProcess:
         # Extract the layer color
         layerColor = layer.color
         
-        if layerColor:
-            red, green, blue, alpha = layerColor
-            strokeColor = AppKit.NSColor.colorWithSRGBRed_green_blue_alpha_(red, green, blue, alpha)
+        if useLayerColors:
+            if layerColor:
+                red, green, blue, alpha = layerColor
+                strokeColor = AppKit.NSColor.colorWithSRGBRed_green_blue_alpha_(red, green, blue, alpha)
+            else:
+                strokeColor = AppKit.NSColor.colorWithSRGBRed_green_blue_alpha_(0, 0, 0, 1)  # Default to black
         else:
             strokeColor = AppKit.NSColor.colorWithSRGBRed_green_blue_alpha_(0, 0, 0, 1)  # Default to black
 
