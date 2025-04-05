@@ -9,7 +9,7 @@ from mojo.roboFont import CurrentFont, CurrentGlyph, RGlyph
 from drawBot import *
 
 
-time = datetime.now().strftime('%Y-%m-%d-%H-%M:')
+time = datetime.now().strftime('%Y-%m-%d-%H-%M')
 
 margin = 100
 
@@ -66,7 +66,9 @@ Variable([
         
         dict(name="handleStroke", ui="ColorWell"),
                 
-        dict(name="removeOverlap", ui="CheckBox"),
+        dict(name="removeOverlap", ui="CheckBox", args=dict(value=True)),
+
+        dict(name="decomposeComponents", ui="CheckBox", args=dict(value=True)),
         
         dict(name="displayCoordinates", ui="CheckBox"),
         
@@ -121,12 +123,8 @@ for glyph in glyphsToProcess:
         
     newPage(glyph.width + margin, height)
     
-    g = glyph.getLayer('foreground')
-    
-    # create orhpan child of g
-    c = g.copy()     
-
-    
+    # create orhpan child of glyph    
+    c = glyph.copy()     
     
     fill(backgroundColor)
     rect(0, 0, glyph.width + margin, height + margin)
@@ -142,8 +140,11 @@ for glyph in glyphsToProcess:
         stroke(outlineColor)
         strokeWidth(1)
    
+    if decomposeComponents:
+       c.decompose()
+   
     if removeOverlap:
-        c.removeOverlap()
+       c.removeOverlap()
 
     pen = c.getPen()
        
