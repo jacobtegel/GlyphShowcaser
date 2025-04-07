@@ -7,4 +7,4 @@ Whether that might be different versions, alternate drawings or something else, 
 
 ![Screenshot of the LayerOverlayer in use](/assets/LayerOverlayer.png)
 
-Requires the Drawbot extension for RoboFont.
+Requires the [Drawbot extension for RoboFont](https://github.com/typemytype/drawBotRoboFontExtension).
