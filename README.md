@@ -7,4 +7,4 @@ You can change colors, Node Shapes and more!
 
 ![Screenshot of the GlyphShowcaser in use](/assets/GlyphShowcaser.png)
 
-Requires the Drawbot extension for RoboFont.
+Requires the [Drawbot extension for RoboFont](https://github.com/typemytype/drawBotRoboFontExtension).
