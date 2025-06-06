@@ -9,7 +9,7 @@ from mojo.roboFont import CurrentFont, CurrentGlyph, RGlyph
 from drawBot import *
 
 
-time = datetime.now().strftime('%Y-%m-%d-%H-%M')
+time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
 
 margin = 100
 
