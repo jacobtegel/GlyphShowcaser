@@ -150,7 +150,7 @@ for glyph in glyphsToProcess:
 
 if font is not None and font.path:
     font_path = os.path.dirname(font.path) #Get Folder in which the font is
-    output_folder = f"{font_path}/Showcaser-Output" # create output folder inside of that folder
+    output_folder = f"{font_path}/LayerOverlayer-Output" # create output folder inside of that folder
 
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
@@ -158,18 +158,23 @@ if font is not None and font.path:
 if exportAs == 0:
 
     if glyphSelection == 0:
-         saveImage(f"{output_folder}/{time}-GlyphShowcaser-{fontName}-{glyph.name}.pdf")  
+         saveImage(f"{output_folder}/{time}-LayerOverlayer-{fontName}-{glyph.name}.pdf")
 
-    elif glyphSelection == 1:  
-         saveImage(f"{output_folder}/{time}-GlyphShowcaser-{fontName}.pdf") 
+    else:
+         saveImage(f"{output_folder}/{time}-LayerOverlayer-{fontName}.pdf")
     
 if exportAs == 1:
 
     if glyphSelection == 0:
-        saveImage(f"{output_folder}/{time}-GlyphShowcaser-{fontName}-{glyph.name}.svg")
+        saveImage(f"{output_folder}/{time}-LayerOverlayer-{fontName}-{glyph.name}.svg", multipage = True)
 
-    elif glyphSelection == 1:
-        saveImage(f"{output_folder}/{time}-GlyphShowcaser-{fontName}-.svg")
+    else:
+        saveImage(f"{output_folder}/{time}-LayerOverlayer-{fontName}.svg", multipage = True)
    
 if exportAs == 2:
-    saveImage(f"{output_folder}/{time}-GlyphShowcaser-{fontName}-{glyph.name}.png") 
+    
+    if glyphSelection == 0:
+        saveImage(f"{output_folder}/{time}-LayerOverlayer-{fontName}-{glyph.name}.png", multipage = True)
+    
+    else:
+        saveImage(f"{output_folder}/{time}-LayerOverlayer-{fontName}.png", multipage = True)
