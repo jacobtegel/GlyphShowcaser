@@ -63,7 +63,7 @@ if glyphSelection == 0:
     glyphNamesToProcess = [CurrentGlyph().name]
 
 elif glyphSelection == 1:
-    glyphNamesToProcess = list(fonts[0].selection)
+    glyphNamesToProcess = list(fonts[0].selectedGlyphNames)
 
 elif glyphSelection == 2:
     glyphNamesToProcess = [g.name for g in fonts[0] if g.contours]
