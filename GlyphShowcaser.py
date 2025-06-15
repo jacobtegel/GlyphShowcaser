@@ -65,10 +65,10 @@ Variable([
         dict(name="offCurveColor", ui="ColorWell"),
         
         dict(name="handleStroke", ui="ColorWell"),
+        
+        dict(name="decomposeComponents", ui="CheckBox", args=dict(value=True)),
                 
         dict(name="removeOverlap", ui="CheckBox", args=dict(value=True)),
-
-        dict(name="decomposeComponents", ui="CheckBox", args=dict(value=True)),
         
         dict(name="displayCoordinates", ui="CheckBox"),
         
