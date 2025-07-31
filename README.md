@@ -12,7 +12,7 @@ You can change colors, Node Shapes and more!
 
 Overlay Layers!
 
-LayerOverlayer is a stripped down and modified version of [GlyphShowcaser] with the intent of overlaying all of your layers over each other. 
+LayerOverlayer is a stripped down and modified version of __GlyphShowcaser__ with the intent of overlaying all of your layers over each other. 
 Whether that might be different versions, alternate drawings or something else, you can stack it and save it as a PDF, SVG or PNG.
 
 ![Screenshot of the LayerOverlayer in use](/assets/LayerOverlayer.png)
@@ -22,7 +22,7 @@ Whether that might be different versions, alternate drawings or something else, 
 
 Overlay Fonts!
 
-FontOverlayer is another modified version of [GlyphShowcaser], using the [LayerOverlayer] logic, but overlaying currently open font files with each other. 
+FontOverlayer is another modified version of __GlyphShowcaser__, using the __LayerOverlayer__ logic, but overlaying currently open font files with each other. 
 Multiple styles of one Family or variously different fonts, you can stack it and save it as a PDF, SVG or PNG.
 
 ![Screenshot of  FontOverlayer in use](/assets/FontOverlayer.png)
