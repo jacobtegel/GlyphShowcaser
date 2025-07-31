@@ -8,7 +8,6 @@ from datetime import datetime
 from mojo.roboFont import CurrentFont, CurrentGlyph, RGlyph
 from drawBot import *
 
-
 time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
 
 margin = 100
@@ -23,12 +22,6 @@ fontHeight = (font.info.ascender + margin) + -(font.info.descender - (margin / 2
 name = f"{font.info.familyName}-{font.info.styleName}"
 
 fontName = name.replace(" ","-")
-
-
-########## BEGIN EZUI ##########
-
-########## END EZUI ##########
-
 
 ########## BEGIN VARIABLES ##########
 
