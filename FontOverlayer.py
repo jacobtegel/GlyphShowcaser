@@ -14,7 +14,10 @@ t.fontSize(72)
 fonts = AllFonts()
 if not fonts:
     raise ValueError("No fonts open.")
-    
+
+for f in fonts:
+    print(f.info.familyName, f.info.styleName)
+
 fontHeight = (fonts[0].info.ascender + margin) + -(fonts[0].info.descender - (margin / 2))
 name = f"{fonts[0].info.familyName}-{fonts[0].info.styleName}"
 fontName = name.replace(" ","-")
@@ -48,6 +51,8 @@ Variable([
         dict(name="removeOverlap", ui="CheckBox", args=dict(value=True)),
                 
         dict(name="tintFonts", ui="CheckBox", args=dict(value=True)),
+        
+        dict(name="tintIntensity", ui="Slider", args=dict(value=.8, minValue=0, maxValue=1)),
     
         dict(name="exportAs", ui="RadioGroup", args=dict(titles=['PDF', 'SVG', 'PNG'], isVertical=True))
         
@@ -81,6 +86,7 @@ for glyphName in glyphNamesToProcess:
     font = fonts[0]
     refGlyph = glyphs[0]
     
+    print(refGlyph)
     # Get glyph bounds for alignment
     bounds = refGlyph.bounds
     
@@ -152,14 +158,14 @@ for glyphName in glyphNamesToProcess:
             else:
                 translate(xOffset, -yMin + (margin / 2))
         
-            factor = (numFonts - 1 - idx) / max(1, (numFonts - 1)) * 0.8  # 0.8 (lightest) to 0.0 (base color)
+            factor = (numFonts - 1 - idx) / max(1, (numFonts - 1)) * tintIntensity  # 0.8 (lightest) to 0.0 (base color)
             
             if tintFonts:
                 tintedColor = AppKit.NSColor.colorWithSRGBRed_green_blue_alpha_(
                     baseR + (1.0 - baseR) * factor,
                     baseG + (1.0 - baseG) * factor,
                     baseB + (1.0 - baseB) * factor,
-                    baseA
+                    baseA + (1.0 - baseA) * factor
                 )
             else:
                 tintedColor = strokeColor
@@ -173,9 +179,15 @@ for glyphName in glyphNamesToProcess:
                     with savedState():
                         x, y = bPoint.anchor
                         translate(x, y)
-                        stroke(tintedColor)
-                        line((0,0), bPoint.bcpIn)
-                        line((0,0), bPoint.bcpOut)
+                        
+                        if showNodes:
+                            stroke(tintedColor)
+                            line((0,0), bPoint.bcpIn)
+                            line((0,0), bPoint.bcpOut)
+                            
+                        else:
+                            continue
+                            
                 for segment in contour:
                     for point in segment:
                     
