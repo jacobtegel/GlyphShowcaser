@@ -238,23 +238,23 @@ if fonts[0] is not None and fonts[0].path:
 if exportAs == 0:
 
     if glyphSelection == 0:
-         saveImage(f"{output_folder}/{time}-LayerOverlayer-{fontName}-{glyph.name}.pdf")
+         saveImage(f"{output_folder}/{time}-FontOverlayer-{fontName}-{glyph.name}.pdf")
 
     else:
-         saveImage(f"{output_folder}/{time}-LayerOverlayer-{fontName}.pdf")
+         saveImage(f"{output_folder}/{time}-FontOverlayer-{fontName}.pdf")
     
 if exportAs == 1:
 
     if glyphSelection == 0:
-        saveImage(f"{output_folder}/{time}-LayerOverlayer-{fontName}-{glyph.name}.svg", multipage = True)
+        saveImage(f"{output_folder}/{time}-FontOverlayer-{fontName}-{glyph.name}.svg", multipage = True)
 
     else:
-        saveImage(f"{output_folder}/{time}-LayerOverlayer-{fontName}.svg", multipage = True)
+        saveImage(f"{output_folder}/{time}-FontOverlayer-{fontName}.svg", multipage = True)
    
 if exportAs == 2:
     
     if glyphSelection == 0:
-        saveImage(f"{output_folder}/{time}-LayerOverlayer-{fontName}-{glyph.name}.png", multipage = True)
+        saveImage(f"{output_folder}/{time}-FontOverlayer-{fontName}-{glyph.name}.png", multipage = True)
     
     else:
-        saveImage(f"{output_folder}/{time}-LayerOverlayer-{fontName}.png", multipage = True)
+        saveImage(f"{output_folder}/{time}-FontOverlayer-{fontName}.png", multipage = True)
