@@ -7,7 +7,7 @@ from mojo.roboFont import CurrentFont, CurrentGlyph, RGlyph
 from mojo.pens import DecomposePointPen
 from drawBot import *
 
-time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S:')
+time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
 margin = 100
 t = FormattedString()
 t.fontSize(72)
