@@ -62,8 +62,6 @@ for glyph in glyphsToProcess:
     if glyph is None or not glyph.contours:
         continue
 
-    print(f"Processing glyph: {glyph.name}")  # Debugging: Print the name of the glyph being processed
-
     glyphHeight = abs(glyph.bounds[1] - glyph.bounds[3])
     if artboardHeight == 0:
         height = (font.info.ascender + margin) + -(font.info.descender - (margin / 2))
