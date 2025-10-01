@@ -41,7 +41,11 @@ Variable([
         
         dict(name="outlineColor", ui="ColorWell"),
         
+        dict(name="outlineThickness", ui="Slider", args=dict(value=1, minValue=1, maxValue=10)),
+        
         dict(name="showNodes", ui="CheckBox", args=dict(value=True)),
+        
+        dict(name="makeNodesOutlineColor", ui="CheckBox", args=dict(value=True)),
         
         dict(name="oncurveNodeShape", ui="RadioGroup", args=dict(titles=['Circle', 'Rectangle', 'Cross'], isVertical=True), value = 0),
         
@@ -131,13 +135,20 @@ for glyph in glyphsToProcess:
     
     if glyphOutline:
         stroke(outlineColor)
-        strokeWidth(1)
+        strokeWidth(outlineThickness)
    
     if decomposeComponents:
        c.decompose()
    
     if removeOverlap:
        c.removeOverlap()
+
+    if makeNodesOutlineColor:
+        onCurveStroke = outlineColor
+        onCurveColor = outlineColor
+        offCurveStroke = outlineColor
+        offCurveColor = outlineColor
+        handleStroke = outlineColor
 
     pen = c.getPen()
        
@@ -170,6 +181,7 @@ for glyph in glyphsToProcess:
                 
                     if point.type == "offcurve":
                         stroke(offCurveStroke)
+                        strokeWidth(1)
                         fill(offCurveColor)
                         
                         if offcurveNodeShape == 0:
@@ -242,4 +254,4 @@ if exportAs == 1:
         saveImage(f"{output_folder}/{time}-GlyphShowcaser-{fontName}-.svg")
        
 if exportAs == 2:
-    saveImage(f"{output_folder}/{time}-GlyphShowcaser-{fontName}-{glyph.name}.png")      
+    saveImage(f"{output_folder}/{time}-GlyphShowcaser-{fontName}-{glyph.name}.png", imageResolution=300)      

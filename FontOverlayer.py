@@ -47,6 +47,8 @@ Variable([
         dict(name="backgroundColor", ui="ColorWell", args=dict(color=AppKit.NSColor.colorWithSRGBRed_green_blue_alpha_(1, 1, 1, 0))),
         
         dict(name="strokeColor", ui="ColorWell", args=dict(color=AppKit.NSColor.colorWithSRGBRed_green_blue_alpha_(0, 0, 0, 1))),
+        
+        dict(name="outlineThickness", ui="Slider", args=dict(value=1, minValue=1, maxValue=10)),
                 
         dict(name="removeOverlap", ui="CheckBox", args=dict(value=True)),
                 
@@ -172,7 +174,7 @@ for glyphName in glyphNamesToProcess:
             
             fill(None)
             stroke(tintedColor)
-            strokeWidth(1)
+            strokeWidth(outlineThickness)
             drawGlyph(c)
             for contour in c:
                 for bPoint in contour.bPoints:
@@ -182,6 +184,8 @@ for glyphName in glyphNamesToProcess:
                         
                         if showNodes:
                             stroke(tintedColor)
+                            strokeWidth(1)
+
                             line((0,0), bPoint.bcpIn)
                             line((0,0), bPoint.bcpOut)
                             
@@ -195,6 +199,7 @@ for glyphName in glyphNamesToProcess:
                     
                             if point.type == "offcurve":
                                 stroke(tintedColor)
+                                strokeWidth(1)
                                 fill(tintedColor)
                                 
                                 if offcurveNodeShape == 0:

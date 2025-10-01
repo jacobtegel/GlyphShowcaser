@@ -27,6 +27,16 @@ Variable([
         dict(name="artboardHeight", ui="RadioGroup", args=dict(titles=['Font Height', 'Glyph Height'], isVertical=True)),
         
         dict(name="backgroundColor", ui="ColorWell", args=dict(color=AppKit.NSColor.colorWithSRGBRed_green_blue_alpha_(1, 1, 1, 0))),
+        
+        dict(name="oncurveNodeShape", ui="RadioGroup", args=dict(titles=['Circle', 'Rectangle', 'Cross'], isVertical=True), value = 0),
+        
+        dict(name="offcurveNodeShape", ui="RadioGroup", args=dict(titles=['Circle', 'Rectangle', 'Cross'], isVertical=True), value = 0),
+        
+        dict(name="outlineThickness", ui="Slider", args=dict(value=1, minValue=1, maxValue=10)),
+        
+        dict(name="nodeSize", ui="Slider", args=dict(value=5, minValue=1, maxValue=10)),
+        
+        dict(name="nodeRatio", ui="Slider", args=dict(value=1, minValue=0, maxValue=1)),
 
         dict(name="useLayerColors", ui="CheckBox", args=dict(value=True)),
     
@@ -36,8 +46,8 @@ Variable([
         
         ], globals())
 
-s = 5
-r = s
+s = nodeSize
+r = nodeRatio * nodeSize
 
 glyphsToProcess = []
 
@@ -115,7 +125,7 @@ for glyph in glyphsToProcess:
         # Set drawing attributes
         fill(None)  # No fill
         stroke(strokeColor)
-        strokeWidth(1)
+        strokeWidth(outlineThickness)
                        
         drawGlyph(c)            # Draw contours without showing nodes
        
@@ -127,6 +137,7 @@ for glyph in glyphsToProcess:
                     x, y = bPoint.anchor
                     translate(x, y)
                     stroke(strokeColor)
+                    strokeWidth(1)
                     line ((0,0), bPoint.bcpIn)
                     line ((0,0), bPoint.bcpOut)
             
@@ -136,15 +147,38 @@ for glyph in glyphsToProcess:
                     
                         if point.type == "offcurve":
                             stroke(strokeColor)
-                
-                            line((point.x-r, point.y-r), (point.x+r, point.y+r))
-                            line((point.x-r, point.y+r), (point.x+r, point.y-r))
+                            strokeWidth(1)
+                            fill(strokeColor)
+
+                            
+                            if offcurveNodeShape == 0:
+                                oval(point.x-r, point.y-r, r*2, r*2)
+                    
+                            elif offcurveNodeShape == 1:
+                                rect(point.x-r, point.y-r, r*2, r*2)
+                        
+                            elif offcurveNodeShape == 2:
+                        
+                                line((point.x-r, point.y-r), (point.x+r, point.y+r))
+                                line((point.x-r, point.y+r), (point.x+r, point.y-r))
                     
                         else:
                             stroke(strokeColor)
+                            strokeWidth(1)
+                            fill(strokeColor)
+
   
-                            line((point.x-s, point.y-s), (point.x+s, point.y+s))
-                            line((point.x-s, point.y+s), (point.x+s, point.y-s))
+                            if oncurveNodeShape == 0:
+                                oval(point.x-s, point.y-s, s*2, s*2)
+                    
+                            elif oncurveNodeShape == 1:
+                                rect(point.x-s, point.y-s, s*2, s*2)
+                        
+                            elif oncurveNodeShape == 2:
+                        
+                                line((point.x-s, point.y-s), (point.x+s, point.y+s))
+                                line((point.x-s, point.y+s), (point.x+s, point.y-s))
+                            
 
 if font is not None and font.path:
     font_path = os.path.dirname(font.path) #Get Folder in which the font is
