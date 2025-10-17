@@ -1,5 +1,13 @@
 # Drawbot
 
+'''
+Overlay Fonts!
+
+FontOverlayer is another modified version of GlyphShowcaser, using the LayerOverlayer logic, but overlaying currently open font files with each other. Multiple styles of one Family or variously different fonts. Stack it and save it.
+
+Jacob Tegel 2024-2025
+'''
+
 import AppKit
 import os
 from datetime import datetime

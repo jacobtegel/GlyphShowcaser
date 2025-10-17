@@ -1,5 +1,16 @@
 # Drawbot
 
+'''
+
+Overlay Layers!
+
+LayerOverlayer is a stripped down and modified version of GlyphShowcaser with the intent of overlaying all of your layers over each other. Whether that might be different versions, alternate drawings or something else, stack it and save it.
+
+Jacob Tegel 2024-2025
+
+'''
+
+
 import AppKit
 import os
 from datetime import datetime

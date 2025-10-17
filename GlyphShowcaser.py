@@ -1,5 +1,13 @@
 # Drawbot
 
+'''
+Showcase your Drawings!
+
+Tool to showcase your Glyphs in Robofonts Drawbot extension. You can change colors, Node Shapes and more!
+
+Jacob Tegel 2024-2025
+'''
+
 import AppKit
 import os
 import ezui
