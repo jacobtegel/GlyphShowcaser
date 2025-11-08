@@ -6,7 +6,8 @@ Tool to showcase your Glyphs in Robofonts Drawbot extension.
 You can change colors, Node Shapes and more!
 
 ![Screenshot of the GlyphShowcaser in use](/assets/GlyphShowcaser.png)
-=====
+
+---
 
 # LayerOverlayer
 
@@ -16,7 +17,8 @@ LayerOverlayer is a stripped down and modified version of __GlyphShowcaser__ wit
 Whether that might be different versions, alternate drawings or something else, you can stack it and save it as a PDF, SVG or PNG.
 
 ![Screenshot of the LayerOverlayer in use](/assets/LayerOverlayer.png)
-=====
+
+---
 
 # FontOverlayer
 
@@ -26,5 +28,7 @@ FontOverlayer is another modified version of __GlyphShowcaser__, using the __Lay
 Multiple styles of one Family or variously different fonts, you can stack it and save it as a PDF, SVG or PNG.
 
 ![Screenshot of  FontOverlayer in use](/assets/FontOverlayer.png)
-=====
+
+---
+
 Requires the [Drawbot extension for RoboFont](https://github.com/typemytype/drawBotRoboFontExtension).
