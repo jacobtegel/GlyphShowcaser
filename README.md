@@ -31,4 +31,4 @@ Multiple styles of one Family or variously different fonts, you can stack it and
 
 ---
 
-Requires the [Drawbot extension for RoboFont](https://github.com/typemytype/drawBotRoboFontExtension).
+Utilizing the [Drawbot module for RoboFont](https://github.com/typemytype/drawBotRoboFontExtension) and [Vanilla](https://github.com/robotools/vanilla/)
