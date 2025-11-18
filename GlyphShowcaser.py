@@ -1,265 +1,631 @@
-# Drawbot
+# menuTitle: Glyph Showcaser
 
 '''
-Showcase your Drawings!
+Show your Drawings!
+Tool to showcase your Glyphs and export it as PDF, SVG or PNG; change colours, Node Shapes and more.
 
-Tool to showcase your Glyphs in Robofonts Drawbot extension. You can change colors, Node Shapes and more!
-
-Jacob Tegel 2024-2025
+Jacob Tegel 2024–2025
 '''
 
-import AppKit
+from vanilla import *
+from AppKit import NSColor, NSButton, NSView
+from mojo.UI import Message
+import drawBot
+from drawBot.ui.drawView import DrawView
+import traceback
 import os
-import ezui
-
 from datetime import datetime
-from mojo.roboFont import CurrentFont, CurrentGlyph, RGlyph
-from drawBot import *
 
 time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
 
-margin = 100
-
-t = FormattedString()
-t.fontSize(72)
+extensionDefaultKey = 'GlyphShowcaser.settings'
 
 font = CurrentFont()
 
-fontHeight = (font.info.ascender + margin) + -(font.info.descender - (margin / 2))
+if font is None:
+	Message('Please open a font in RoboFont.')
 
-name = f"{font.info.familyName}-{font.info.styleName}"
+else: 
+	name = ( f'{font.info.familyName}-{font.info.styleName}')
 
-fontName = name.replace(" ","-")
+fontName = name.replace(' ', '-')
 
-########## BEGIN VARIABLES ##########
+class GlyphShowcaser:
+	
+	def __init__(self):
+		self.winWidth = 1000
+		self.winHeight = 1250
+		self.sidebarWidth = 300
+		self.sidebarHeight = 1565
 
-Variable([
+		self.nodeStackSize = 0
 
-        dict(name="glyphSelection", ui="RadioGroup", args=dict(titles=['Current Glyph', 'Selected Glyphs', 'All Glyphs'], isVertical=True)),
-        
-        dict(name="margin", ui="Slider", args=dict(value=100, minValue=0, maxValue=500)),
-    
-        dict(name="artboardHeight", ui="RadioGroup", args=dict(titles=['Font Height', 'Glyph Height'], isVertical=True)),
-    
-        dict(name="backgroundColor", ui="ColorWell", args=dict(color=AppKit.NSColor.colorWithSRGBRed_green_blue_alpha_(1, 1, 1, 0))), 
+		self.w = Window((self.winWidth, self.winHeight), 'Glyph Showcaser', (100, 100))
+		self.w.controls = Group((-self.sidebarWidth, 10, self.sidebarWidth, self.sidebarHeight))
 
-        dict(name="glyphColor", ui="ColorWell", args=dict(color=AppKit.NSColor.colorWithSRGBRed_green_blue_alpha_(1, 1, 1, 0))),
-        
-        dict(name="glyphOutline", ui="CheckBox", args=dict(value=True)),
-        
-        dict(name="outlineColor", ui="ColorWell"),
-        
-        dict(name="outlineThickness", ui="Slider", args=dict(value=1, minValue=1, maxValue=10)),
-        
-        dict(name="showNodes", ui="CheckBox", args=dict(value=True)),
-        
-        dict(name="makeNodesOutlineColor", ui="CheckBox", args=dict(value=True)),
-        
-        dict(name="oncurveNodeShape", ui="RadioGroup", args=dict(titles=['Circle', 'Rectangle', 'Cross'], isVertical=True), value = 0),
-        
-        dict(name="offcurveNodeShape", ui="RadioGroup", args=dict(titles=['Circle', 'Rectangle', 'Cross'], isVertical=True), value = 0),
-        
-        dict(name="nodeSize", ui="Slider", args=dict(value=5, minValue=1, maxValue=10)),
-        
-        dict(name="nodeRatio", ui="Slider", args=dict(value=1, minValue=0, maxValue=1)),
-        
-        dict(name="onCurveStroke", ui="ColorWell"),
-        dict(name="onCurveColor", ui="ColorWell"),
-        
-        dict(name="offCurveStroke", ui="ColorWell"),
-        dict(name="offCurveColor", ui="ColorWell"),
-        
-        dict(name="handleStroke", ui="ColorWell"),
-        
-        dict(name="decomposeComponents", ui="CheckBox", args=dict(value=True)),
-                
-        dict(name="removeOverlap", ui="CheckBox", args=dict(value=True)),
-        
-        dict(name="displayCoordinates", ui="CheckBox"),
-        
-        dict(name="coordinatesColor", ui="ColorWell"),
-        
-        dict(name="exportAs", ui="RadioGroup", args=dict(titles=['PDF', 'SVG', 'PNG'], isVertical=True))
-        
-        ], globals())
+		x1 = 10
+		x2 = 150
+		
+		y = 10
+		
+		w1 = 145
+		w2 = -10
+		
+		h = 20
 
-s = nodeSize
-r = nodeRatio * nodeSize
+		dy = h + 15
 
-# print(nodeShape)
+		t = 5
 
-########## END VARIABLES ##########
+		# Glyph selection
+		self.w.controls.glyphSelectionLabel = TextBox((x1, y, w1, h), 'Glyph Selection')
+		self.w.controls.glyphSelection = VerticalRadioGroup((x2, y-2.5, w2, h * 3), ['Current Glyph', 'Selected Glyphs', 'All Glyphs'], callback = self.redraw)
+		self.w.controls.glyphSelection.set(0)
+		y += dy + h * 2
 
+		# margin
+		self.w.controls.marginLabel = TextBox((x1, y, w1, h), 'Margin')
+		self.w.controls.marginSlider = Slider((x2, y, w2-40, h + t), minValue = 0, maxValue = 500, value = 100, callback = self.marginSliderChanged)
+		self.w.controls.marginValue = EditText((w2-35, y, w2, h + t), str(round(float(self.w.controls.marginSlider.get()))), callback = self.marginValueChanged, continuous = False)
+		y += dy + t
 
-##########
-# Determine which glyphs to process based on GlyphSelection
-glyphsToProcess = []
+		# height
+		self.w.controls.artboardHeightLabel = TextBox((x1, y, w1, h), 'Artboard Height')
+		self.w.controls.artboardHeight = VerticalRadioGroup((x2, y-2.5, w2, h * 2), ['Font Height', 'Glyph Heigh'], callback = self.redraw)
+		self.w.controls.artboardHeight.set(0)
+		y += dy + h
 
-# Current glyph
-if glyphSelection == 0:
-    glyphsToProcess = [CurrentGlyph()]
+		# backgroundColor
+		self.w.controls.backgroundColorLabel = TextBox((x1, y, w1, h), 'Background Color')
+		self.w.controls.backgroundColor = ColorWell((x2, y, w2, h + 10), callback = self.redraw, color=NSColor.clearColor())
+		y += dy + 10
 
-# Selected Glyphs    
-elif glyphSelection == 1:
-    # print(font.selection)
-    glyphsToProcess = [font[glyphName] for glyphName in font.selection]
-    
-# All glyphs (with contours)
-elif glyphSelection == 2:
-    glyphsToProcess = [glyph for glyph in font]
-    
-print(glyphsToProcess)
+		# glyphColor
+		self.w.controls.glyphColorLabel = TextBox((x1, y, w1, h), 'Glyph Color')
+		self.w.controls.glyphColor = ColorWell((x2, y, w2, h + 10), callback = self.redraw, color=NSColor.clearColor())
+		y += dy + 10
 
-# Process selected glyph/s
-for glyph in glyphsToProcess:
-    # Skip empty or None glyphs
-    if glyph is None or not glyph.contours:
-        continue
-##########
+		# glyphOutline
+		self.w.controls.glyphOutlineLabel = TextBox((x1, y, w1, h), 'Glyph Outline')
+		self.w.controls.glyphOutlineCheck = CheckBox((x2, y, w2, h), '', callback = self.redraw, value = True)
+		y += dy
 
-    # print(glyph.bounds)
-    glyphHeight = abs(glyph.bounds[1]-glyph.bounds[3])
-    # print(glyphHeight)
-    
-    if artboardHeight == 0:
-        height = (font.info.ascender + margin) + -(font.info.descender - (margin / 2))
-    else:
-        height = (glyphHeight + margin)
-        
-    newPage(glyph.width + margin, height)
-    
-    # create orhpan child of glyph    
-    c = glyph.copy()     
-    
-    fill(backgroundColor)
-    rect(0, 0, glyph.width + margin, height + margin)
-    
-    if artboardHeight == 0:
-        translate(margin/2, -font.info.descender + (margin / 2))
-    else:
-        translate(margin/2, -glyph.bounds[1] + margin / 2)
-    
-    fill(glyphColor)
-    
-    if glyphOutline:
-        stroke(outlineColor)
-        strokeWidth(outlineThickness)
-   
-    if decomposeComponents:
-       c.decompose()
-   
-    if removeOverlap:
-       c.removeOverlap()
+		# outlineColor
+		self.w.controls.outlineColorLabel = TextBox((x1, y, w1, h), 'Outline Color')
+		self.w.controls.outlineColor = ColorWell((x2, y, w2, h + 10), callback = self.redraw, color=NSColor.blackColor())
+		y += dy + 10
 
-    if makeNodesOutlineColor:
-        onCurveStroke = outlineColor
-        onCurveColor = outlineColor
-        offCurveStroke = outlineColor
-        offCurveColor = outlineColor
-        handleStroke = outlineColor
+		# outlineThickness
+		self.w.controls.outlineThicknessLabel = TextBox((x1, y, w1, h), 'Outline Thickness')
+		self.w.controls.outlineThicknessSlider = Slider((x2, y, w2-40, h + t), minValue = 1, maxValue = 5, value = 1, callback = self.outlineThicknessSliderChanged)
+		self.w.controls.outlineThicknessValue = EditText((w2-35, y, w2, h + t), str(round(float(self.w.controls.outlineThicknessSlider.get()), 1)), callback = self.outlineThicknessValueChanged, continuous = False)
+		y += dy + t
 
-    pen = c.getPen()
-       
-    drawGlyph(c)
-           
-    for contour in c:
+		# showNodes
+		self.w.controls.showNodesLabel = TextBox((x1, y, w1, h), 'Show Nodes')
+		self.w.controls.showNodesCheck = CheckBox((x2, y, w2, h), '', callback = self.redraw, value = True)
+		y += dy
 
-        for bPoint in contour.bPoints:
-            
-            if showNodes:
-                
-                with savedState():
-                    x, y = bPoint.anchor
-                    translate(x, y)
-                    stroke(handleStroke)
-                    strokeWidth(1)
-                    line ((0,0), bPoint.bcpIn)
-                    line ((0,0), bPoint.bcpOut)
-    
-        for segment in contour:
-           
-            for point in segment:
-                
-                # stroke(None)
-                # fill(1,.5,.5)
-                
-                # s = 10
-                
-                if showNodes:
-                
-                    if point.type == "offcurve":
-                        stroke(offCurveStroke)
-                        strokeWidth(1)
-                        fill(offCurveColor)
-                        
-                        if offcurveNodeShape == 0:
-                        
-                            oval(point.x-r, point.y-r, r*2, r*2)
-                    
-                        elif offcurveNodeShape == 1:
-                        
-                            rect(point.x-r, point.y-r, r*2, r*2)
-                        
-                        elif offcurveNodeShape == 2:
-                        
-                            line((point.x-r, point.y-r), (point.x+r, point.y+r))
-                            line((point.x-r, point.y+r), (point.x+r, point.y-r))
-                            
-                    else:
-                        stroke(onCurveStroke)
-                        strokeWidth(1)
-                        fill(onCurveColor)
-  
-                        if oncurveNodeShape == 0:
-                        
-                            oval(point.x-s, point.y-s, s*2, s*2)
-                    
-                        elif oncurveNodeShape == 1:
-                        
-                            rect(point.x-s, point.y-s, s*2, s*2)
-                        
-                        elif oncurveNodeShape == 2:
-                        
-                            line((point.x-s, point.y-s), (point.x+s, point.y+s))
-                            line((point.x-s, point.y+s), (point.x+s, point.y-s))
-                            
-                                            
-                # shape[nodeShape](point.x-s, point.y-s, s*2, s*2)
-                
-                if displayCoordinates:
-                    stroke(None)
-                    fill(coordinatesColor)
-                    text(f"{point.x}, {point.y}",(point.x,point.y-s-10),align="center",)
+		# cornerNodeShape
+		self.w.controls.cornerNodeShapeLabel = TextBox((x1, y, w1, h), 'Corner PointShape')
+		self.w.controls.cornerNodeShape = VerticalRadioGroup((x2, y-2.5, w2, h * 4), ['Circle', 'Rectangle', 'Triangle', 'Cross'], callback = self.redraw)
+		self.w.controls.cornerNodeShape.set(1)
+		y += dy + 3 * h
+
+		# smoothCornerNodeShape
+		self.w.controls.smoothCornerNodeShapeLabel = TextBox((x1, y, w1, h), 'Smooth Point Corner')
+		self.w.controls.smoothCornerNodeShape = VerticalRadioGroup((x2, y-2.5, w2, h * 4), ['Circle', 'Rectangle', 'Triangle', 'Cross'], callback = self.redraw)
+		self.w.controls.smoothCornerNodeShape.set(2)
+		y += dy + 3 * h
+
+		# onCurveNodeShape
+		self.w.controls.onCurveNodeShapeLabel = TextBox((x1, y, w1, h), 'Curve Point Shape')
+		self.w.controls.onCurveNodeShape = VerticalRadioGroup((x2, y-2.5, w2, h * 4), ['Circle', 'Rectangle', 'Triangle', 'Cross'], callback = self.redraw)
+		self.w.controls.onCurveNodeShape.set(0)
+		y += dy + 3 * h
+
+		# offCurveNodeShape
+		self.w.controls.offCurveNodeShapeLabel = TextBox((x1, y, w1, h), 'Offcurve Point Shape')
+		self.w.controls.offCurveNodeShape = VerticalRadioGroup((x2, y-2.5, w2, h * 4), ['Circle', 'Rectangle', 'Triangle', 'Cross'], callback = self.redraw)
+		self.w.controls.offCurveNodeShape.set(0)
+		y += dy + 3 * h
+
+		# nodeSize
+		self.w.controls.nodeSizeLabel = TextBox((x1, y, w1, h), 'Node Size')
+		self.w.controls.nodeSizeSlider = Slider((x2, y, w2-40, h + t), minValue = 1, maxValue = 10, value = 5, callback = self.nodeSizeSliderChanged)
+		self.w.controls.nodeSizeValue = EditText((w2-35, y, w2, h + t), str(round(float(self.w.controls.nodeSizeSlider.get()), 1)), callback = self.nodeSizeValueChanged, continuous = False)
+		y += dy + t
+
+		# nodeSizeRatio
+		self.w.controls.nodeSizeRatioLabel = TextBox((x1, y, w1, h), 'Node Size Ratio')
+		self.w.controls.nodeSizeRatioSlider = Slider((x2, y, w2-40, h + t), minValue = 0, maxValue = 2, value = 1, callback = self.nodeSizeRatioSliderChanged)
+		self.w.controls.nodeSizeRatioValue = EditText((w2-35, y, w2, h + t), str(round(float(self.w.controls.nodeSizeRatioSlider.get()), 1)), callback = self.nodeSizeRatioValueChanged, continuous = False)
+		y += dy + t
+
+		# makeNodesOutlineCol
+		self.w.controls.makeNodesOutlineColLabel = TextBox((x1, y, w1, h), 'Node Color = Outline Color')
+		self.w.controls.makeNodesOutlineColCheck = CheckBox((x2, y, w2, h), '', callback = self.makeNodesOutlineColCheckCallback, value = False)
+		y += dy
+
+		
+		# cornerPoint
+		self.w.controls.cornerPointLabel = TextBox((x1, y, w1, h), 'Corner Point')
+		self.w.controls.cornerPointColor = ColorWell((x2, y, w2, h + 10), callback = self.redraw, color=NSColor.blackColor())
+		y += dy + 10
+		# cornerStroke
+		self.w.controls.cornerStrokeLabel = TextBox((x1, y, w1, h), 'Corner Point Outline')
+		self.w.controls.cornerStrokeColor = ColorWell((x2, y, w2, h + 10), callback = self.redraw, color=NSColor.blackColor())
+		y += dy + 10
+		
+		# smoothCornerPoint
+		self.w.controls.smoothCornerPointLabel = TextBox((x1, y, w1, h), 'Smooth Corner Point')
+		self.w.controls.smoothCornerPointColor = ColorWell((x2, y, w2, h + 10), callback = self.redraw, color=NSColor.blackColor())
+		y += dy + 10
+		# smoothCornerStroke
+		self.w.controls.smoothCornerStrokeLabel = TextBox((x1, y, w1, h), 'Smooth Corner Outline')
+		self.w.controls.smoothCornerStrokeColor = ColorWell((x2, y, w2, h + 10), callback = self.redraw, color=NSColor.blackColor())
+		y += dy + 10
+		
+		# onCurvePoint
+		self.w.controls.onCurvePointLabel = TextBox((x1, y, w1, h), 'Curve Point')
+		self.w.controls.onCurvePointColor = ColorWell((x2, y, w2, h + 10), callback = self.redraw, color=NSColor.blackColor())
+		y += dy + 10
+		# onCurveStroke
+		self.w.controls.onCurveStrokeLabel = TextBox((x1, y, w1, h), 'Curve Outline')
+		self.w.controls.onCurveStrokeColor = ColorWell((x2, y, w2, h + 10), callback = self.redraw, color=NSColor.blackColor())
+		y += dy + 10
+
+		# offCurvePoint
+		self.w.controls.offCurvePointLabel = TextBox((x1, y, w1, h), 'Offcurve Point')
+		self.w.controls.offCurvePointColor = ColorWell((x2, y, w2, h + 10), callback = self.redraw, color=NSColor.blackColor())
+		y += dy + 10
+		# offCurveStroke
+		self.w.controls.offCurveStrokeLabel = TextBox((x1, y, w1, h), 'Offcurve Stroke')
+		self.w.controls.offCurveStrokeColor = ColorWell((x2, y, w2, h + 10), callback = self.redraw, color=NSColor.blackColor())
+		y += dy + 10
+		
+
+		# handlebar color
+		self.w.controls.handleBarLabel = TextBox((x1, y, w1, h), 'Handle Bar')
+		self.w.controls.handleBarColor = ColorWell((x2, y, w2, h + 10), callback = self.redraw, color=NSColor.blackColor())
+		y += dy + 10
 
 
-# print(fontName)
+		# decomposeComponents
+		self.w.controls.decomposeComponentsLabel = TextBox((x1, y, w1, h), 'Decompose Components')
+		self.w.controls.decomposeComponentsCheck = CheckBox((x2, y, w2, h), '', callback = self.redraw, value = True)
+		y += dy
 
-if font is not None and font.path:
-    font_path = os.path.dirname(font.path) #Get Folder in which the font is
-    output_folder = f"{font_path}/Showcaser-Output" # create output folder inside of that folder
+		# removeOverlap
+		self.w.controls.removeOverlapLabel = TextBox((x1, y, w1, h), 'Remove Overlap')
+		self.w.controls.removeOverlapCheck = CheckBox((x2, y, w2, h), '', callback = self.redraw, value = True)
+		y += dy
 
-    if not os.path.exists(output_folder):
-        os.makedirs(output_folder)
+		# displayCoordinates
+		self.w.controls.displayCoordinatesLabel = TextBox((x1, y, w1, h), 'Display Coordinates')
+		self.w.controls.displayCoordinatesCheck = CheckBox((x2, y, w2, h), '', callback = self.displayCoordinatesCheckCallback, value = False)
+		y += dy
 
-# print(font_path)
-# print(output_folder)
-# print(time)
+		# coordinates color
+		self.w.controls.coordinatesColorLabel = TextBox((x1, y, w1, h), 'Coordinates Color')
+		self.w.controls.coordinatesColor = ColorWell((x2, y, w2, h + 10), callback = self.redraw, color=NSColor.blackColor())
+		# self.w.controls.coordinatesColorLabel.show(False)
+		# self.w.controls.coordinatesColor.show(False)
+		y += dy + 10
 
-if exportAs == 0:
+		# # displayCoordinates
+		# self.w.controls.displayMetricsLabel = TextBox((x1, y, w1, h), 'Display Metrics')
+		# self.w.controls.displayMetricsCheck = CheckBox((x2, y, w2, h), '', callback = self.displayMetricsCheckCallback, value = False)
+		# y += dy
 
-    if glyphSelection == 0:
-         saveImage(f"{output_folder}/{time}-GlyphShowcaser-{fontName}-{glyph.name}.pdf")  
-    
-    elif glyphSelection == 1:  
-         saveImage(f"{output_folder}/{time}-GlyphShowcaser-{fontName}.pdf") 
-        
-if exportAs == 1:
+		# # coordinates color
+		# self.w.controls.MetricsColorLabel = TextBox((x1, y, w1, h), 'Metrics Color')
+		# self.w.controls.MetricsColor = ColorWell((x2, y, w2, h + 10), callback = self.redraw)
+		# y += dy + 10
 
-    if glyphSelection == 0:
-        saveImage(f"{output_folder}/{time}-GlyphShowcaser-{fontName}-{glyph.name}.svg")
-    
-    elif glyphSelection == 1:
-        saveImage(f"{output_folder}/{time}-GlyphShowcaser-{fontName}-.svg")
-       
-if exportAs == 2:
-    saveImage(f"{output_folder}/{time}-GlyphShowcaser-{fontName}-{glyph.name}.png", imageResolution=300)      
+		# export as
+		self.w.controls.exportText = TextBox((x1, y, w1, h), 'Export as:')
+		self.w.controls.exportPdf = CheckBox((x2, y, w2, h), 'PDF')
+		y += dy -10
+		self.w.controls.exportSvg = CheckBox((x2, y, w2, h), 'SVG')
+		y += dy -10
+		self.w.controls.exportPng = CheckBox((x2, y, w2, h), 'PNG')
+		y += dy
+
+		# close
+		self.w.closeButton = Button(((-self.sidebarWidth - 10), - h - h / 2, self.sidebarWidth / 2 - 5, h), 'Close', callback=self.close)
+		# export
+		self.w.exportButton = Button((-self.sidebarWidth / 2 - 5, - h - h / 2, self.sidebarWidth / 2 - 5, h), 'Export', callback=self.exportButtonCallback)
+
+		self.w.setDefaultButton(self.w.exportButton)
+
+		# view = self.w.controls.getNSView()
+		self.w.scrollView = ScrollView((-(self.sidebarWidth) - 10, 10, self.sidebarWidth, - (10 + 10 + h)), self.w.controls.getNSView(), autohidesScrollers=True, drawsBackground = False)
+		self.w.preview = DrawView((10, 10, -self.sidebarWidth - 20, -10))
+		
+		self.w.open()
+		self.redraw(None)
+
+	def marginSliderChanged(self, sender):
+		v = round(float(self.w.controls.marginSlider.get()))
+		self.w.controls.marginValue.set(str(v))
+		self.redraw(sender)
+
+	def marginValueChanged(self, sender):
+		v = round(float(self.w.controls.marginValue.get()))
+		self.w.controls.marginSlider.set(v)
+		self.redraw(sender)
+
+	def outlineThicknessSliderChanged(self, sender):
+		v = round(float(self.w.controls.outlineThicknessSlider.get()), 1)
+		self.w.controls.outlineThicknessValue.set(str(v))
+		self.redraw(sender)
+
+	def outlineThicknessValueChanged(self, sender):
+		v = round(float(self.w.controls.outlineThicknessValue.get()), 1)
+		self.w.controls.outlineThicknessSlider.set(v)
+		self.redraw(sender)
+
+	def nodeSizeSliderChanged(self, sender):
+		v = round(float(self.w.controls.nodeSizeSlider.get()), 1)
+		self.w.controls.nodeSizeValue.set(str(v))
+		self.redraw(sender)
+
+	def nodeSizeValueChanged(self, sender):
+		v = round(float(self.w.controls.nodeSizeValue.get()), 1)
+		self.w.controls.nodeSizeSlider.set(v)
+		self.redraw(sender)
+
+	def nodeSizeRatioSliderChanged(self, sender):
+		v = round(float(self.w.controls.nodeSizeRatioSlider.get()), 1)
+		self.w.controls.nodeSizeRatioValue.set(str(v))
+		self.redraw(sender)
+
+	def nodeSizeRatioValueChanged(self, sender):
+		v = round(float(self.w.controls.nodeSizeRatioValue.get()), 1)
+		self.w.controls.nodeSizeRatioSlider.set(v)
+		self.redraw(sender)
+
+	def makeNodesOutlineColCheckCallback(self, sender):
+		
+		# if self.w.controls.makeNodesOutlineColCheck.get() == 1:
+		# 	self.w.controls.onCurveStrokeLabel.show(False)
+		# 	self.w.controls.onCurveStrokeColor.show(False)
+
+		# 	self.w.controls.onCurvePointLabel.show(False)
+		# 	self.w.controls.onCurvePointColor.show(False)
+
+		# 	self.w.controls.offCurveStrokeLabel.show(False)
+		# 	self.w.controls.offCurveStrokeColor.show(False)
+
+		# 	self.w.controls.offCurvePointLabel.show(False)
+		# 	self.w.controls.offCurvePointColor.show(False)
+
+		# 	self.w.controls.handleBarLabel.show(False)
+		# 	self.w.controls.handleBarColor.show(False)
+
+		# else:
+		# 	self.w.controls.onCurveStrokeLabel.show(True)
+		# 	self.w.controls.onCurveStrokeColor.show(True)
+
+		# 	self.w.controls.onCurvePointLabel.show(True)
+		# 	self.w.controls.onCurvePointColor.show(True)
+
+		# 	self.w.controls.offCurveStrokeLabel.show(True)
+		# 	self.w.controls.offCurveStrokeColor.show(True)
+
+		# 	self.w.controls.offCurvePointLabel.show(True)
+		# 	self.w.controls.offCurvePointColor.show(True)
+
+		# 	self.w.controls.handleBarLabel.show(True)
+		# 	self.w.controls.handleBarColor.show(True)
+
+		self.redraw(sender)
+
+	def displayCoordinatesCheckCallback(self, sender):
+		# if self.w.controls.displayCoordinatesCheck.get() == 0:
+		# 	self.w.controls.coordinatesColorLabel.show(False)
+		# 	self.w.controls.coordinatesColor.show(False)
+		# else:
+		# 	self.w.controls.coordinatesColorLabel.show(True)
+		# 	self.w.controls.coordinatesColor.show(True)
+
+		self.redraw(sender)
+
+	def exportAs(self):
+
+		exportPdf = self.w.controls.exportPdf.get()
+		exportSvg = self.w.controls.exportSvg.get()
+		exportPng = self.w.controls.exportPng.get()
+
+		return exportPdf, exportSvg, exportPng
+
+	def exportButtonCallback(self, sender):
+		self.redraw(sender)
+		self.export(sender)	
+
+	def glyphsToProcess(self):
+		
+		glyphSelection = self.w.controls.glyphSelection.get()
+
+		# Setup
+		glyphsToProcess = []
+
+		# Current glyph
+		if glyphSelection == 0:
+			glyphsToProcess = [CurrentGlyph()]
+
+		# Selected glyphs    
+		elif glyphSelection == 1:
+			glyphsToProcess = [font[glyphName] for glyphName in font.selectedGlyphNames]
+
+		# All glyphs
+		elif glyphSelection == 2:
+			glyphsToProcess = [glyph for glyph in font]
+
+		return glyphsToProcess
+
+	def drawNodes(self, x, y, s, shape, pointColor, strokeColor):
+
+		outlineThickness = self.w.controls.outlineThicknessSlider.get()
+		drawBot.strokeWidth(outlineThickness)
+
+		drawBot.fill(pointColor)
+		drawBot.stroke(strokeColor)
+
+		if shape == 0:
+								
+			drawBot.oval(x - s, y - s, s * 2, s * 2)
+		
+		elif shape == 1:
+							
+			drawBot.rect(x - s, y - s, s * 2, s * 2)
+							
+		elif shape == 2:
+			s *= 1.1
+			drawBot.polygon((x - s, y - s), (x + s, y - s), (x, y + s))
+
+		elif shape == 3:
+
+			drawBot.stroke(pointColor)
+			drawBot.line((x - s, y - s), (x + s, y + s))
+			drawBot.line((x - s, y + s), (x + s, y - s))
+
+
+	def redraw(self, sender):
+
+		#Variables
+		glyphSelection = self.w.controls.glyphSelection.get()
+		margin = self.w.controls.marginSlider.get()
+		artboardHeight = self.w.controls.artboardHeight.get()
+		backgroundColor = self.w.controls.backgroundColor.get()
+		glyphColor = self.w.controls.glyphColor.get()
+		glyphOutline = self.w.controls.glyphOutlineCheck.get()
+		outlineColor = self.w.controls.outlineColor.get()
+		outlineThickness = self.w.controls.outlineThicknessSlider.get()
+		showNodes = self.w.controls.showNodesCheck.get()
+		makeNodesOutlineColor = self.w.controls.makeNodesOutlineColCheck.get()
+		
+		cornerNodeShape = self.w.controls.cornerNodeShape.get()
+		smoothCornerNodeShape = self.w.controls.smoothCornerNodeShape.get()
+
+		onCurveNodeShape = self.w.controls.onCurveNodeShape.get()
+		
+		offCurveNodeShape = self.w.controls.offCurveNodeShape.get()
+		
+		nodeSize = self.w.controls.nodeSizeSlider.get()
+		nodeSizeRatio = self.w.controls.nodeSizeRatioSlider.get()
+		
+		cornerPointColor = self.w.controls.cornerPointColor.get()
+		cornerStrokeColor = self.w.controls.cornerStrokeColor.get()
+
+		smoothCornerPointColor = self.w.controls.smoothCornerPointColor.get()
+		smoothCornerStrokeColor = self.w.controls.smoothCornerStrokeColor.get()
+
+		onCurvePointColor = self.w.controls.onCurvePointColor.get()
+		onCurveStrokeColor = self.w.controls.onCurveStrokeColor.get()
+		
+		offCurveStrokeColor = self.w.controls.offCurveStrokeColor.get()
+		offCurvePointColor = self.w.controls.offCurvePointColor.get()
+		handleBarColor = self.w.controls.handleBarColor.get()
+		decomposeComponents = self.w.controls.decomposeComponentsCheck.get()
+		removeOverlap = self.w.controls.removeOverlapCheck.get()
+		displayCoordinates = self.w.controls.displayCoordinatesCheck.get()
+		coordinatesColor = self.w.controls.coordinatesColor.get()
+		# displayMetrics = self.w.controls.displayMetricsCheck.get()
+		# metricsColor = self.w.controls.metricsColor.get()
+
+		glyphsToProcess = self.glyphsToProcess()
+		
+		s = nodeSize
+		r = nodeSizeRatio * s
+
+		# Drawing
+		drawBot.newDrawing()
+
+		for glyph in glyphsToProcess:
+			
+			# Skip empty or None glyphs
+			if glyph is None or not glyph.contours:
+				continue		
+
+			glyphHeight = abs(glyph.bounds[1]-glyph.bounds[3])
+
+			if artboardHeight == 0:
+				height = (font.info.ascender + margin) + -(font.info.descender - (margin / 2))
+			else:
+				height = (glyphHeight + margin)
+
+			drawBot.newPage(glyph.width + margin, height)
+
+			# Create Orphan
+			c = glyph.copy()     
+	
+			drawBot.fill(backgroundColor)
+			drawBot.rect(0, 0, glyph.width + margin, height + margin)
+			
+			if artboardHeight == 0:
+				drawBot.translate(margin/2, -font.info.descender + (margin / 2))
+			
+			else:
+				drawBot.translate(margin/2, -glyph.bounds[1] + margin / 2)
+			
+			# if displayMetrics:
+			# 	stroke(metricsColor)
+			# 	drawBot.line((0, font.info.descender), (width + margin, font.info.descender))
+			# 	drawBot.line((0, font.info.xHeight), (width + margin, font.info.xHeight))
+			# 	drawBot.line((0, font.info.capHeight), (width + margin, font.info.capHeight))
+			# 	drawBot.line((0, font.info.ascender), (width + margin, font.info.ascender))
+
+			drawBot.fill(glyphColor)
+			
+			if glyphOutline:
+				drawBot.stroke(outlineColor)
+				drawBot.strokeWidth(outlineThickness)
+		   
+			if decomposeComponents:
+				c.decompose()
+		   
+			if removeOverlap:
+			   c.removeOverlap()
+
+			if makeNodesOutlineColor == 1:
+				onCurveStrokeColor = outlineColor
+				onCurvePointColor = outlineColor
+				offCurveStrokeColor = outlineColor
+				offCurvePointColor = outlineColor
+				handleBarColor = outlineColor
+
+			pen = c.getPen()
+			   
+			drawBot.drawGlyph(c)
+				   
+			if showNodes:
+
+				for contour in c:
+
+					for bPoint in contour.bPoints:
+						
+						if showNodes:
+							
+							with drawBot.savedState():
+								x, y = bPoint.anchor
+								drawBot.translate(x, y)
+								drawBot.stroke(handleBarColor)
+								drawBot.strokeWidth(outlineThickness)
+								drawBot.line ((0,0), bPoint.bcpIn)
+								drawBot.line ((0,0), bPoint.bcpOut)
+				
+					for i,segment in enumerate(contour):
+						nextSegment = contour[(i + 1) % len(contour)]
+
+						if segment.type != nextSegment.type:
+							for point in segment:
+								if point.type != 'offcurve':
+
+									x = point.x
+									y = point.y
+									
+									# Smooth Corner
+									if point.smooth:
+										self.drawNodes(x, y, s, smoothCornerNodeShape, smoothCornerPointColor, smoothCornerStrokeColor)
+									# Corner Point
+									else:
+										self.drawNodes(x, y, s, cornerNodeShape, cornerPointColor, cornerStrokeColor)
+
+						elif segment.type == 'curve' and nextSegment.type == 'curve':
+							for point in segment:
+								if point.type != 'offcurve':
+
+									x = point.x
+									y = point.y
+
+									# Curve Point
+									if point.smooth:
+										self.drawNodes(x, y, s, onCurveNodeShape, onCurvePointColor, onCurveStrokeColor)
+									# Corner Point
+									else:
+										self.drawNodes(x, y, s, cornerNodeShape, cornerPointColor, cornerStrokeColor)
+						
+						else:
+							# Corner Point
+							for point in segment:
+								if point.type != 'offcurve':
+									x = point.x 
+									y = point.y 
+									self.drawNodes(x, y, s, cornerNodeShape, cornerPointColor, cornerStrokeColor)
+
+						for point in segment:
+
+							x = point.x
+							y = point.y
+
+							# Offcurve Point
+							if point.type == 'offcurve':
+								drawBot.stroke(offCurveStrokeColor)
+								drawBot.strokeWidth(outlineThickness)
+								drawBot.fill(offCurvePointColor)
+
+								self.drawNodes(x, y, r, offCurveNodeShape, offCurvePointColor, offCurveStrokeColor)
+													
+						if displayCoordinates:
+							drawBot.stroke(None)
+							drawBot.fill(coordinatesColor)
+							drawBot.fontSize(6)
+							drawBot.text(f'{point.x}, {point.y}',(point.x,point.y-s-10),align='center',)
+
+						# if displayCoordinates and displayMetrics:
+						# 	drawBot.stroke(None)
+						# 	drawBot.fill(metricsColor)
+						# 	drawBot.text(f'{font.info.descender}', (0 + metrics, font.info.descender - 10), align = 'left')
+
+			pdf = drawBot.pdfImage()
+
+			self.w.preview.setPDFDocument(pdf)
+
+			drawBot.endDrawing()
+
+	def export(self, sender):
+
+		glyphSelection = self.w.controls.glyphSelection.get()
+		glyphsToProcess = self.glyphsToProcess()
+
+		exportPdf, exportSvg, exportPng = self.exportAs()
+		
+		# exportPdf = self.w.controls.exportPdf.get()
+		# exportSvg = self.w.controls.exportSvg.get()
+		# exportPng = self.w.controls.exportPng.get()
+
+		if font.path:
+			url = os.path.dirname(font.path)
+			export = f'{url}/GlyphShowcaser'
+
+			if not os.path.exists(export):
+				os.makedirs(export)
+
+		if exportPdf == 1:
+
+			if glyphSelection == 0:
+				for glyph in glyphsToProcess:
+					drawBot.saveImage(f'{export}/{time}-GlyphShowcaser-{fontName}-{glyph.name}.pdf')  
+			
+			elif glyphSelection == 1:  
+				drawBot.saveImage(f'{export}/{time}-GlyphShowcaser-{fontName}.pdf') 
+				
+		if exportSvg == 1:
+
+			if glyphSelection == 0:
+				for glyph in glyphsToProcess:
+					drawBot.saveImage(f'{export}/{time}-GlyphShowcaser-{fontName}-{glyph.name}.svg')
+			
+			elif glyphSelection == 1:
+				drawBot.saveImage(f'{export}/{time}-GlyphShowcaser-{fontName}-.svg')
+			   
+		if exportPng == 1:
+			for glyph in glyphsToProcess:
+				drawBot.saveImage(f'{export}/{time}-GlyphShowcaser-{fontName}-{glyph.name}.png', imageResolution=300)
+
+	def close(self, sender):
+		self.w.close()
+
+GlyphShowcaser()
