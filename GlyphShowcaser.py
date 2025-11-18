@@ -71,7 +71,7 @@ class GlyphShowcaser:
 
 		# height
 		self.w.controls.artboardHeightLabel = TextBox((x1, y, w1, h), 'Artboard Height')
-		self.w.controls.artboardHeight = VerticalRadioGroup((x2, y-2.5, w2, h * 2), ['Font Height', 'Glyph Heigh'], callback = self.redraw)
+		self.w.controls.artboardHeight = VerticalRadioGroup((x2, y-2.5, w2, h * 2), ['Font Height', 'Glyph Height'], callback = self.redraw)
 		self.w.controls.artboardHeight.set(0)
 		y += dy + h
 
@@ -367,11 +367,18 @@ class GlyphShowcaser:
 
 	def drawNodes(self, x, y, s, shape, pointColor, strokeColor):
 
+		makeNodesOutlineColor = self.w.controls.makeNodesOutlineColCheck.get()
+		outlineColor = self.w.controls.outlineColor.get()
+	
 		outlineThickness = self.w.controls.outlineThicknessSlider.get()
 		drawBot.strokeWidth(outlineThickness)
 
 		drawBot.fill(pointColor)
 		drawBot.stroke(strokeColor)
+
+		if makeNodesOutlineColor:
+			drawBot.fill(outlineColor)
+			drawBot.stroke(outlineColor)
 
 		if shape == 0:
 								
