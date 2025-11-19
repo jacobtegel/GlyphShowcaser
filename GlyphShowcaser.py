@@ -27,8 +27,7 @@ if font is None:
 
 else: 
 	name = ( f'{font.info.familyName}-{font.info.styleName}')
-
-fontName = name.replace(' ', '-')
+	fontName = name.replace(' ', '-')
 
 class GlyphShowcaser:
 	
@@ -213,16 +212,6 @@ class GlyphShowcaser:
 		# self.w.controls.coordinatesColor.show(False)
 		y += dy + 10
 
-		# # displayCoordinates
-		# self.w.controls.displayMetricsLabel = TextBox((x1, y, w1, h), 'Display Metrics')
-		# self.w.controls.displayMetricsCheck = CheckBox((x2, y, w2, h), '', callback = self.displayMetricsCheckCallback, value = False)
-		# y += dy
-
-		# # coordinates color
-		# self.w.controls.MetricsColorLabel = TextBox((x1, y, w1, h), 'Metrics Color')
-		# self.w.controls.MetricsColor = ColorWell((x2, y, w2, h + 10), callback = self.redraw)
-		# y += dy + 10
-
 		# export as
 		self.w.controls.exportText = TextBox((x1, y, w1, h), 'Export as:')
 		self.w.controls.exportPdf = CheckBox((x2, y, w2, h), 'PDF')
@@ -288,38 +277,6 @@ class GlyphShowcaser:
 
 	def makeNodesOutlineColCheckCallback(self, sender):
 		
-		# if self.w.controls.makeNodesOutlineColCheck.get() == 1:
-		# 	self.w.controls.onCurveStrokeLabel.show(False)
-		# 	self.w.controls.onCurveStrokeColor.show(False)
-
-		# 	self.w.controls.onCurvePointLabel.show(False)
-		# 	self.w.controls.onCurvePointColor.show(False)
-
-		# 	self.w.controls.offCurveStrokeLabel.show(False)
-		# 	self.w.controls.offCurveStrokeColor.show(False)
-
-		# 	self.w.controls.offCurvePointLabel.show(False)
-		# 	self.w.controls.offCurvePointColor.show(False)
-
-		# 	self.w.controls.handleBarLabel.show(False)
-		# 	self.w.controls.handleBarColor.show(False)
-
-		# else:
-		# 	self.w.controls.onCurveStrokeLabel.show(True)
-		# 	self.w.controls.onCurveStrokeColor.show(True)
-
-		# 	self.w.controls.onCurvePointLabel.show(True)
-		# 	self.w.controls.onCurvePointColor.show(True)
-
-		# 	self.w.controls.offCurveStrokeLabel.show(True)
-		# 	self.w.controls.offCurveStrokeColor.show(True)
-
-		# 	self.w.controls.offCurvePointLabel.show(True)
-		# 	self.w.controls.offCurvePointColor.show(True)
-
-		# 	self.w.controls.handleBarLabel.show(True)
-		# 	self.w.controls.handleBarColor.show(True)
-
 		self.redraw(sender)
 
 	def displayCoordinatesCheckCallback(self, sender):
@@ -580,11 +537,6 @@ class GlyphShowcaser:
 							drawBot.fill(coordinatesColor)
 							drawBot.fontSize(6)
 							drawBot.text(f'{point.x}, {point.y}',(point.x,point.y-s-10),align='center',)
-
-						# if displayCoordinates and displayMetrics:
-						# 	drawBot.stroke(None)
-						# 	drawBot.fill(metricsColor)
-						# 	drawBot.text(f'{font.info.descender}', (0 + metrics, font.info.descender - 10), align = 'left')
 
 			pdf = drawBot.pdfImage()
 
