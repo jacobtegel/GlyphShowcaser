@@ -35,7 +35,7 @@ class GlyphShowcaser:
 		self.winWidth = 1000
 		self.winHeight = 1250
 		self.sidebarWidth = 300
-		self.sidebarHeight = 1565
+		self.sidebarHeight = 1600
 
 		self.nodeStackSize = 0
 
@@ -200,17 +200,28 @@ class GlyphShowcaser:
 		self.w.controls.removeOverlapCheck = CheckBox((x2, y, w2, h), '', callback = self.redraw, value = True)
 		y += dy
 
+		
 		# displayCoordinates
 		self.w.controls.displayCoordinatesLabel = TextBox((x1, y, w1, h), 'Display Coordinates')
 		self.w.controls.displayCoordinatesCheck = CheckBox((x2, y, w2, h), '', callback = self.displayCoordinatesCheckCallback, value = False)
 		y += dy
 
+		
 		# coordinates color
 		self.w.controls.coordinatesColorLabel = TextBox((x1, y, w1, h), 'Coordinates Color')
-		self.w.controls.coordinatesColor = ColorWell((x2, y, w2, h + 10), callback = self.redraw, color=NSColor.blackColor())
-		# self.w.controls.coordinatesColorLabel.show(False)
-		# self.w.controls.coordinatesColor.show(False)
+		self.w.controls.coordinatesColor = ColorWell((x2, y, w2, h + 10), callback = self.redraw, color=NSColor.grayColor())
 		y += dy + 10
+
+		# displayMetrics
+		self.w.controls.displayMetricsLabel = TextBox((x1, y, w1, h), 'Display Metrics')
+		self.w.controls.displayMetricsCheck = CheckBox((x2, y, w2, h), '', callback = self.displayCoordinatesCheckCallback, value = False)
+		y += dy
+
+		# Metrics color
+		self.w.controls.metricsColorLabel = TextBox((x1, y, w1, h), 'Metrics Color')
+		self.w.controls.metricsColor = ColorWell((x2, y, w2, h + 10), callback = self.redraw, color=NSColor.grayColor())
+		y += dy + 10
+
 
 		# export as
 		self.w.controls.exportText = TextBox((x1, y, w1, h), 'Export as:')
@@ -280,12 +291,6 @@ class GlyphShowcaser:
 		self.redraw(sender)
 
 	def displayCoordinatesCheckCallback(self, sender):
-		# if self.w.controls.displayCoordinatesCheck.get() == 0:
-		# 	self.w.controls.coordinatesColorLabel.show(False)
-		# 	self.w.controls.coordinatesColor.show(False)
-		# else:
-		# 	self.w.controls.coordinatesColorLabel.show(True)
-		# 	self.w.controls.coordinatesColor.show(True)
 
 		self.redraw(sender)
 
@@ -360,13 +365,17 @@ class GlyphShowcaser:
 
 		#Variables
 		glyphSelection = self.w.controls.glyphSelection.get()
+		
 		margin = self.w.controls.marginSlider.get()
 		artboardHeight = self.w.controls.artboardHeight.get()
+		
 		backgroundColor = self.w.controls.backgroundColor.get()
 		glyphColor = self.w.controls.glyphColor.get()
 		glyphOutline = self.w.controls.glyphOutlineCheck.get()
+		
 		outlineColor = self.w.controls.outlineColor.get()
 		outlineThickness = self.w.controls.outlineThicknessSlider.get()
+		
 		showNodes = self.w.controls.showNodesCheck.get()
 		makeNodesOutlineColor = self.w.controls.makeNodesOutlineColCheck.get()
 		
@@ -392,17 +401,21 @@ class GlyphShowcaser:
 		offCurveStrokeColor = self.w.controls.offCurveStrokeColor.get()
 		offCurvePointColor = self.w.controls.offCurvePointColor.get()
 		handleBarColor = self.w.controls.handleBarColor.get()
+		
 		decomposeComponents = self.w.controls.decomposeComponentsCheck.get()
 		removeOverlap = self.w.controls.removeOverlapCheck.get()
+		
 		displayCoordinates = self.w.controls.displayCoordinatesCheck.get()
 		coordinatesColor = self.w.controls.coordinatesColor.get()
-		# displayMetrics = self.w.controls.displayMetricsCheck.get()
-		# metricsColor = self.w.controls.metricsColor.get()
+		displayMetrics = self.w.controls.displayMetricsCheck.get()
+		metricsColor = self.w.controls.metricsColor.get()
 
 		glyphsToProcess = self.glyphsToProcess()
 		
 		s = nodeSize
 		r = nodeSizeRatio * s
+
+		i = 6
 
 		# Drawing
 		drawBot.newDrawing()
@@ -434,12 +447,29 @@ class GlyphShowcaser:
 			else:
 				drawBot.translate(margin/2, -glyph.bounds[1] + margin / 2)
 			
-			# if displayMetrics:
-			# 	stroke(metricsColor)
-			# 	drawBot.line((0, font.info.descender), (width + margin, font.info.descender))
-			# 	drawBot.line((0, font.info.xHeight), (width + margin, font.info.xHeight))
-			# 	drawBot.line((0, font.info.capHeight), (width + margin, font.info.capHeight))
-			# 	drawBot.line((0, font.info.ascender), (width + margin, font.info.ascender))
+			if displayMetrics:
+				drawBot.stroke(metricsColor)
+				drawBot.fill(metricsColor)
+				drawBot.fontSize(i)	
+			
+				drawBot.line((0 -  margin / 2, font.info.descender), (drawBot.width(), font.info.descender))
+				drawBot.line((0 -  margin / 2, 0), (drawBot.width(), 0))
+				drawBot.line((0 -  margin / 2, font.info.xHeight), (drawBot.width(), font.info.xHeight))
+				drawBot.line((0 -  margin / 2, font.info.capHeight), (drawBot.width(), font.info.capHeight))
+				drawBot.line((0 -  margin / 2, font.info.ascender), (drawBot.width(), font.info.ascender))
+				
+				drawBot.line((0, - 10), (0, 10))
+				drawBot.line((glyph.width, -10), (glyph.width, 10))
+
+				drawBot.stroke(None)
+
+				o = 10
+
+				drawBot.text(f'descender',(0 + o -  margin / 2, font.info.descender - o), align='left',)
+				drawBot.text(f'baseline',(0 + o -  margin / 2, 0 - o), align='left',)
+				drawBot.text(f'xHeight',(0 + o -  margin / 2, font.info.xHeight - o), align='left',)
+				drawBot.text(f'capHeight',(0 + o -  margin / 2, font.info.capHeight - o), align='left',)
+				drawBot.text(f'ascender',(0 + o -  margin / 2, font.info.ascender - o), align='left',)
 
 			drawBot.fill(glyphColor)
 			
@@ -532,10 +562,14 @@ class GlyphShowcaser:
 
 								self.drawNodes(x, y, r, offCurveNodeShape, offCurvePointColor, offCurveStrokeColor)
 													
-						if displayCoordinates:
-							drawBot.stroke(None)
-							drawBot.fill(coordinatesColor)
-							drawBot.fontSize(6)
+			if displayCoordinates:
+				drawBot.stroke(None)
+				drawBot.fill(coordinatesColor)
+				drawBot.fontSize(i)	
+
+				for contour in c:
+					for segment in contour:
+						for point in segment:
 							drawBot.text(f'{point.x}, {point.y}',(point.x,point.y-s-10),align='center',)
 
 			pdf = drawBot.pdfImage()
@@ -551,10 +585,6 @@ class GlyphShowcaser:
 
 		exportPdf, exportSvg, exportPng = self.exportAs()
 		
-		# exportPdf = self.w.controls.exportPdf.get()
-		# exportSvg = self.w.controls.exportSvg.get()
-		# exportPng = self.w.controls.exportPng.get()
-
 		if font.path:
 			url = os.path.dirname(font.path)
 			export = f'{url}/GlyphShowcaser'
