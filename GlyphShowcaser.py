@@ -617,4 +617,7 @@ class GlyphShowcaser:
 	def close(self, sender):
 		self.w.close()
 
+	def destroy(self):
+		self.w.close()
+
 GlyphShowcaser()
