@@ -226,7 +226,7 @@ class GlyphShowcaser:
 
 		# Bluezones color
 		self.w.controls.bluezonesColorLabel = TextBox((x1, y, w1, h), 'Bluezones Color')
-		self.w.controls.bluezonesColor = ColorWell((x2, y, w2, h + 10), callback = self.redraw, color = NSColor.colorWithSRGBRed_green_blue_alpha_(.5, 1, 1, .3))
+		self.w.controls.bluezonesColor = ColorWell((x2, y, w2, h + 10), callback = self.redraw, color = NSColor.colorWithRed_green_blue_alpha_(.5, 1, 1, .3))
 		y += dy + 10
 
 
@@ -527,10 +527,10 @@ class GlyphShowcaser:
 						for point in segment:
 							
 							if point.type != 'offcurve':
-								drawBot.text(f'{point.x}, {point.y}',(point.x,point.y-s-5),align='center',)
+								drawBot.text(f'{point.x}, {point.y}',(point.x,point.y - s - 10),align='center',)
 							
 							else:
-								drawBot.text(f'{point.x}, {point.y}',(point.x,point.y-s-5),align='center',)
+								drawBot.text(f'{point.x}, {point.y}',(point.x,point.y - s - 10),align='center',)
 
 
 				   
