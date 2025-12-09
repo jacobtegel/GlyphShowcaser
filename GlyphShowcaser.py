@@ -35,7 +35,7 @@ class GlyphShowcaser:
 		self.winWidth = 1000
 		self.winHeight = 1250
 		self.sidebarWidth = 300
-		self.sidebarHeight = 1600
+		self.sidebarHeight = 1715
 
 		self.nodeStackSize = 0
 
@@ -189,24 +189,21 @@ class GlyphShowcaser:
 		self.w.controls.handleBarColor = ColorWell((x2, y, w2, h + 10), callback = self.redraw, color=NSColor.blackColor())
 		y += dy + 10
 
-
-		# decomposeComponents
-		self.w.controls.decomposeComponentsLabel = TextBox((x1, y, w1, h), 'Decompose Components')
-		self.w.controls.decomposeComponentsCheck = CheckBox((x2, y, w2, h), '', callback = self.redraw, value = True)
-		y += dy
-
 		# removeOverlap
 		self.w.controls.removeOverlapLabel = TextBox((x1, y, w1, h), 'Remove Overlap')
 		self.w.controls.removeOverlapCheck = CheckBox((x2, y, w2, h), '', callback = self.redraw, value = True)
 		y += dy
 
+		# decomposeComponents
+		self.w.controls.decomposeComponentsLabel = TextBox((x1, y, w1, h), 'Decompose Comps')
+		self.w.controls.decomposeComponentsCheck = CheckBox((x2, y, w2, h), '', callback = self.redraw, value = True)
+		y += dy
 		
 		# displayCoordinates
 		self.w.controls.displayCoordinatesLabel = TextBox((x1, y, w1, h), 'Display Coordinates')
 		self.w.controls.displayCoordinatesCheck = CheckBox((x2, y, w2, h), '', callback = self.displayCoordinatesCheckCallback, value = False)
 		y += dy
 
-		
 		# coordinates color
 		self.w.controls.coordinatesColorLabel = TextBox((x1, y, w1, h), 'Coordinates Color')
 		self.w.controls.coordinatesColor = ColorWell((x2, y, w2, h + 10), callback = self.redraw, color=NSColor.grayColor())
@@ -219,7 +216,17 @@ class GlyphShowcaser:
 
 		# Metrics color
 		self.w.controls.metricsColorLabel = TextBox((x1, y, w1, h), 'Metrics Color')
-		self.w.controls.metricsColor = ColorWell((x2, y, w2, h + 10), callback = self.redraw, color=NSColor.grayColor())
+		self.w.controls.metricsColor = ColorWell((x2, y, w2, h + 10), callback = self.redraw, color = NSColor.grayColor())
+		y += dy + 10
+
+		# displayBluezones
+		self.w.controls.displayBluezonesLabel = TextBox((x1, y, w1, h), 'Display Bluezones')
+		self.w.controls.displayBluezonesCheck = CheckBox((x2, y, w2, h), '', callback = self.displayCoordinatesCheckCallback, value = False)
+		y += dy
+
+		# Bluezones color
+		self.w.controls.bluezonesColorLabel = TextBox((x1, y, w1, h), 'Bluezones Color')
+		self.w.controls.bluezonesColor = ColorWell((x2, y, w2, h + 10), callback = self.redraw, color = NSColor.colorWithSRGBRed_green_blue_alpha_(.5, 1, 1, .3))
 		y += dy + 10
 
 
@@ -409,6 +416,8 @@ class GlyphShowcaser:
 		coordinatesColor = self.w.controls.coordinatesColor.get()
 		displayMetrics = self.w.controls.displayMetricsCheck.get()
 		metricsColor = self.w.controls.metricsColor.get()
+		displayBluezones = self.w.controls.displayBluezonesCheck.get()
+		bluezonesColor = self.w.controls.bluezonesColor.get()
 
 		glyphsToProcess = self.glyphsToProcess()
 		
@@ -471,17 +480,29 @@ class GlyphShowcaser:
 				drawBot.text(f'capHeight',(0 + o -  margin / 2, font.info.capHeight - o), align='left',)
 				drawBot.text(f'ascender',(0 + o -  margin / 2, font.info.ascender - o), align='left',)
 
-			drawBot.fill(glyphColor)
+			if displayBluezones:
+				drawBot.fill(bluezonesColor)
+				drawBot.stroke(None)
+
+				drawBot.rect(0 - margin, font.info.postscriptBlueValues[0], drawBot.width() + margin, abs(font.info.postscriptBlueValues[1] - font.info.postscriptBlueValues[0]))
+				drawBot.rect(0 - margin, font.info.postscriptBlueValues[2], drawBot.width() + margin, abs(font.info.postscriptBlueValues[3] - font.info.postscriptBlueValues[2]))
+				drawBot.rect(0 - margin, font.info.postscriptBlueValues[4], drawBot.width() + margin, abs(font.info.postscriptBlueValues[5] - font.info.postscriptBlueValues[4]))
+				drawBot.rect(0 - margin, font.info.postscriptBlueValues[7], drawBot.width() + margin, abs(font.info.postscriptBlueValues[7] - font.info.postscriptBlueValues[6]))
+
+				drawBot.rect(0 - margin, font.info.postscriptOtherBlues[0], drawBot.width() + margin, abs(font.info.postscriptOtherBlues[1] - font.info.postscriptOtherBlues[0]))
+
 			
-			if glyphOutline:
-				drawBot.stroke(outlineColor)
-				drawBot.strokeWidth(outlineThickness)
-		   
 			if decomposeComponents:
 				c.decompose()
 		   
 			if removeOverlap:
 			   c.removeOverlap()
+
+			drawBot.fill(glyphColor)
+			
+			if glyphOutline:
+				drawBot.stroke(outlineColor)
+				drawBot.strokeWidth(outlineThickness)
 
 			if makeNodesOutlineColor == 1:
 				onCurveStrokeColor = outlineColor
@@ -493,6 +514,25 @@ class GlyphShowcaser:
 			pen = c.getPen()
 			   
 			drawBot.drawGlyph(c)
+
+
+
+			if displayCoordinates:
+				drawBot.stroke(None)
+				drawBot.fill(coordinatesColor)
+				drawBot.fontSize(i)	
+
+				for contour in c:
+					for segment in contour:
+						for point in segment:
+							
+							if point.type != 'offcurve':
+								drawBot.text(f'{point.x}, {point.y}',(point.x,point.y-s-5),align='center',)
+							
+							else:
+								drawBot.text(f'{point.x}, {point.y}',(point.x,point.y-s-5),align='center',)
+
+
 				   
 			if showNodes:
 
@@ -561,16 +601,6 @@ class GlyphShowcaser:
 								drawBot.fill(offCurvePointColor)
 
 								self.drawNodes(x, y, r, offCurveNodeShape, offCurvePointColor, offCurveStrokeColor)
-													
-			if displayCoordinates:
-				drawBot.stroke(None)
-				drawBot.fill(coordinatesColor)
-				drawBot.fontSize(i)	
-
-				for contour in c:
-					for segment in contour:
-						for point in segment:
-							drawBot.text(f'{point.x}, {point.y}',(point.x,point.y-s-10),align='center',)
 
 			pdf = drawBot.pdfImage()
 
