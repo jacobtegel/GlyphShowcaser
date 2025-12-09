@@ -18,8 +18,6 @@ from datetime import datetime
 
 time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
 
-# extensionDefaultKey = 'GlyphShowcaser.settings'
-
 font = CurrentFont()
 
 if font is None:
@@ -474,11 +472,11 @@ class GlyphShowcaser:
 
 				o = 10
 
-				drawBot.text(f'descender',(0 + o -  margin / 2, font.info.descender - o), align='left',)
-				drawBot.text(f'baseline',(0 + o -  margin / 2, 0 - o), align='left',)
-				drawBot.text(f'xHeight',(0 + o -  margin / 2, font.info.xHeight - o), align='left',)
-				drawBot.text(f'capHeight',(0 + o -  margin / 2, font.info.capHeight - o), align='left',)
-				drawBot.text(f'ascender',(0 + o -  margin / 2, font.info.ascender - o), align='left',)
+				drawBot.text(f'Descender',(0 + o -  margin / 2, font.info.descender - o), align='left',)
+				drawBot.text(f'Baseline',(0 + o -  margin / 2, 0 - o), align='left',)
+				drawBot.text(f'x-Height',(0 + o -  margin / 2, font.info.xHeight - o), align='left',)
+				drawBot.text(f'Cap-Height',(0 + o -  margin / 2, font.info.capHeight - o), align='left',)
+				drawBot.text(f'Ascender',(0 + o -  margin / 2, font.info.ascender - o), align='left',)
 
 			if displayBluezones:
 				drawBot.fill(bluezonesColor)
@@ -515,25 +513,6 @@ class GlyphShowcaser:
 			   
 			drawBot.drawGlyph(c)
 
-
-
-			if displayCoordinates:
-				drawBot.stroke(None)
-				drawBot.fill(coordinatesColor)
-				drawBot.fontSize(i)	
-
-				for contour in c:
-					for segment in contour:
-						for point in segment:
-							
-							if point.type != 'offcurve':
-								drawBot.text(f'{point.x}, {point.y}',(point.x,point.y - s - 10),align='center',)
-							
-							else:
-								drawBot.text(f'{point.x}, {point.y}',(point.x,point.y - s - 10),align='center',)
-
-
-				   
 			if showNodes:
 
 				for contour in c:
@@ -601,6 +580,21 @@ class GlyphShowcaser:
 								drawBot.fill(offCurvePointColor)
 
 								self.drawNodes(x, y, r, offCurveNodeShape, offCurvePointColor, offCurveStrokeColor)
+			
+			if displayCoordinates:
+				drawBot.stroke(None)
+				drawBot.fill(coordinatesColor)
+				drawBot.fontSize(i)	
+
+				for contour in c:
+					for segment in contour:
+						for point in segment:
+							
+							if point.type != 'offcurve':
+								drawBot.text(f'{point.x}, {point.y}',(point.x,point.y - s - 10),align='center',)
+							
+							else:
+								drawBot.text(f'{point.x}, {point.y}',(point.x,point.y - s - 10),align='center',)
 
 			pdf = drawBot.pdfImage()
 
