@@ -415,7 +415,7 @@ class GlyphShowcaser:
 		s = nodeSize
 		r = nodeSizeRatio * s
 
-		i = 6
+		i = 10
 
 		# Drawing
 		drawBot.newDrawing()
@@ -510,8 +510,8 @@ class GlyphShowcaser:
 								drawBot.line ((0,0), bPoint.bcpIn)
 								drawBot.line ((0,0), bPoint.bcpOut)
 				
-					for i,segment in enumerate(contour):
-						nextSegment = contour[(i + 1) % len(contour)]
+					for e,segment in enumerate(contour):
+						nextSegment = contour[(e + 1) % len(contour)]
 
 						if segment.type != nextSegment.type:
 							for point in segment:
