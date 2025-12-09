@@ -415,7 +415,7 @@ class GlyphShowcaser:
 		s = nodeSize
 		r = nodeSizeRatio * s
 
-		i = 10
+		i = 6
 
 		# Drawing
 		drawBot.newDrawing()
