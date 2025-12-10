@@ -219,7 +219,7 @@ class GlyphShowcaser:
 
 		# displayBluezones
 		self.w.controls.displayBluezonesLabel = TextBox((x1, y, w1, h), 'Display Bluezones')
-		self.w.controls.displayBluezonesCheck = CheckBox((x2, y, w2, h), '', callback = self.displayCoordinatesCheckCallback, value = False)
+		self.w.controls.displayBluezonesCheck = CheckBox((x2, y, w2, h), '', callback = self.displayBluezonesCheckCallback, value = False)
 		y += dy
 
 		# Bluezones color
@@ -296,6 +296,10 @@ class GlyphShowcaser:
 		self.redraw(sender)
 
 	def displayCoordinatesCheckCallback(self, sender):
+
+		self.redraw(sender)
+
+	def displayBluezonesCheckCallback(self, sender):
 
 		self.redraw(sender)
 
@@ -482,12 +486,22 @@ class GlyphShowcaser:
 				drawBot.fill(bluezonesColor)
 				drawBot.stroke(None)
 
-				drawBot.rect(0 - margin, font.info.postscriptBlueValues[0], drawBot.width() + margin, abs(font.info.postscriptBlueValues[1] - font.info.postscriptBlueValues[0]))
-				drawBot.rect(0 - margin, font.info.postscriptBlueValues[2], drawBot.width() + margin, abs(font.info.postscriptBlueValues[3] - font.info.postscriptBlueValues[2]))
-				drawBot.rect(0 - margin, font.info.postscriptBlueValues[4], drawBot.width() + margin, abs(font.info.postscriptBlueValues[5] - font.info.postscriptBlueValues[4]))
-				drawBot.rect(0 - margin, font.info.postscriptBlueValues[7], drawBot.width() + margin, abs(font.info.postscriptBlueValues[7] - font.info.postscriptBlueValues[6]))
+				try:
 
-				drawBot.rect(0 - margin, font.info.postscriptOtherBlues[0], drawBot.width() + margin, abs(font.info.postscriptOtherBlues[1] - font.info.postscriptOtherBlues[0]))
+					for e, blueValue in enumerate(font.info.postscriptBlueValues):
+						nextBlueValue = font.info.postscriptBlueValues[(e + 1) % len(font.info.postscriptBlueValues)]
+						if e % 2 != 0:
+							continue
+						drawBot.rect(0 - margin, blueValue, drawBot.width() + margin, abs(nextBlueValue - blueValue))
+
+					for e, blueValue in enumerate(font.info.postscriptOtherBlues):
+						nextBlueValue = font.info.postscriptOtherBlues[(e + 1) % len(font.info.postscriptOtherBlues)]
+						if e % 2 != 0:
+							continue
+						drawBot.rect(0 - margin, blueValue, drawBot.width() + margin, abs(nextBlueValue - blueValue))
+				
+				except Exception as e:
+					Message('Error', informativeText=str(e))
 
 			
 			if decomposeComponents:
