@@ -32,8 +32,8 @@ class GlyphShowcaser:
 	def __init__(self):
 		self.winWidth = 1000
 		self.winHeight = 1250
-		self.sidebarWidth = 300
-		self.sidebarHeight = 1715
+		self.sidebarWidth = 325
+		self.sidebarHeight = 1835
 
 		self.nodeStackSize = 0
 
@@ -41,11 +41,11 @@ class GlyphShowcaser:
 		self.w.controls = Group((-self.sidebarWidth, 10, self.sidebarWidth, self.sidebarHeight))
 
 		x1 = 10
-		x2 = 150
+		x2 = 160
 		
 		y = 10
 		
-		w1 = 145
+		w1 = 160
 		w2 = -10
 		
 		h = 20
@@ -74,13 +74,13 @@ class GlyphShowcaser:
 
 		# backgroundColor
 		self.w.controls.backgroundColorLabel = TextBox((x1, y, w1, h), 'Background Color')
-		self.w.controls.backgroundColor = ColorWell((x2, y, w2, h + 10), callback = self.redraw, color=NSColor.clearColor())
-		y += dy + 10
+		self.w.controls.backgroundColor = ColorWell((x2, y, w2, h + 15), callback = self.redraw, color=NSColor.clearColor())
+		y += dy + 15
 
 		# glyphColor
 		self.w.controls.glyphColorLabel = TextBox((x1, y, w1, h), 'Glyph Color')
-		self.w.controls.glyphColor = ColorWell((x2, y, w2, h + 10), callback = self.redraw, color=NSColor.clearColor())
-		y += dy + 10
+		self.w.controls.glyphColor = ColorWell((x2, y, w2, h + 15), callback = self.redraw, color=NSColor.clearColor())
+		y += dy + 15
 
 		# glyphOutline
 		self.w.controls.glyphOutlineLabel = TextBox((x1, y, w1, h), 'Glyph Outline')
@@ -89,8 +89,8 @@ class GlyphShowcaser:
 
 		# outlineColor
 		self.w.controls.outlineColorLabel = TextBox((x1, y, w1, h), 'Outline Color')
-		self.w.controls.outlineColor = ColorWell((x2, y, w2, h + 10), callback = self.redraw, color=NSColor.blackColor())
-		y += dy + 10
+		self.w.controls.outlineColor = ColorWell((x2, y, w2, h + 15), callback = self.redraw, color=NSColor.blackColor())
+		y += dy + 15
 
 		# outlineThickness
 		self.w.controls.outlineThicknessLabel = TextBox((x1, y, w1, h), 'Outline Thickness')
@@ -104,13 +104,13 @@ class GlyphShowcaser:
 		y += dy
 
 		# cornerNodeShape
-		self.w.controls.cornerNodeShapeLabel = TextBox((x1, y, w1, h), 'Corner PointShape')
+		self.w.controls.cornerNodeShapeLabel = TextBox((x1, y, w1, h), 'Corner Point Shape')
 		self.w.controls.cornerNodeShape = VerticalRadioGroup((x2, y-2.5, w2, h * 4), ['Circle', 'Rectangle', 'Triangle', 'Cross'], callback = self.redraw)
 		self.w.controls.cornerNodeShape.set(1)
 		y += dy + 3 * h
 
 		# smoothCornerNodeShape
-		self.w.controls.smoothCornerNodeShapeLabel = TextBox((x1, y, w1, h), 'Smooth Point Corner')
+		self.w.controls.smoothCornerNodeShapeLabel = TextBox((x1, y, w1, h), 'Smooth Corner Point')
 		self.w.controls.smoothCornerNodeShape = VerticalRadioGroup((x2, y-2.5, w2, h * 4), ['Circle', 'Rectangle', 'Triangle', 'Cross'], callback = self.redraw)
 		self.w.controls.smoothCornerNodeShape.set(2)
 		y += dy + 3 * h
@@ -140,52 +140,52 @@ class GlyphShowcaser:
 		y += dy + t
 
 		# makeNodesOutlineCol
-		self.w.controls.makeNodesOutlineColLabel = TextBox((x1, y, w1, h), 'Node Color = Outline Color')
+		self.w.controls.makeNodesOutlineColLabel = TextBox((x1, y, w1, h), 'Nodes = Outline Color')
 		self.w.controls.makeNodesOutlineColCheck = CheckBox((x2, y, w2, h), '', callback = self.makeNodesOutlineColCheckCallback, value = False)
 		y += dy
 
 		
 		# cornerPoint
 		self.w.controls.cornerPointLabel = TextBox((x1, y, w1, h), 'Corner Point')
-		self.w.controls.cornerPointColor = ColorWell((x2, y, w2, h + 10), callback = self.redraw, color=NSColor.blackColor())
-		y += dy + 10
+		self.w.controls.cornerPointColor = ColorWell((x2, y, w2, h + 15), callback = self.redraw, color=NSColor.blackColor())
+		y += dy + 15
 		# cornerStroke
 		self.w.controls.cornerStrokeLabel = TextBox((x1, y, w1, h), 'Corner Point Outline')
-		self.w.controls.cornerStrokeColor = ColorWell((x2, y, w2, h + 10), callback = self.redraw, color=NSColor.blackColor())
-		y += dy + 10
+		self.w.controls.cornerStrokeColor = ColorWell((x2, y, w2, h + 15), callback = self.redraw, color=NSColor.blackColor())
+		y += dy + 15
 		
 		# smoothCornerPoint
 		self.w.controls.smoothCornerPointLabel = TextBox((x1, y, w1, h), 'Smooth Corner Point')
-		self.w.controls.smoothCornerPointColor = ColorWell((x2, y, w2, h + 10), callback = self.redraw, color=NSColor.blackColor())
-		y += dy + 10
+		self.w.controls.smoothCornerPointColor = ColorWell((x2, y, w2, h + 15), callback = self.redraw, color=NSColor.blackColor())
+		y += dy + 15
 		# smoothCornerStroke
 		self.w.controls.smoothCornerStrokeLabel = TextBox((x1, y, w1, h), 'Smooth Corner Outline')
-		self.w.controls.smoothCornerStrokeColor = ColorWell((x2, y, w2, h + 10), callback = self.redraw, color=NSColor.blackColor())
-		y += dy + 10
+		self.w.controls.smoothCornerStrokeColor = ColorWell((x2, y, w2, h + 15), callback = self.redraw, color=NSColor.blackColor())
+		y += dy + 15
 		
 		# onCurvePoint
 		self.w.controls.onCurvePointLabel = TextBox((x1, y, w1, h), 'Curve Point')
-		self.w.controls.onCurvePointColor = ColorWell((x2, y, w2, h + 10), callback = self.redraw, color=NSColor.blackColor())
-		y += dy + 10
+		self.w.controls.onCurvePointColor = ColorWell((x2, y, w2, h + 15), callback = self.redraw, color=NSColor.blackColor())
+		y += dy + 15
 		# onCurveStroke
-		self.w.controls.onCurveStrokeLabel = TextBox((x1, y, w1, h), 'Curve Outline')
-		self.w.controls.onCurveStrokeColor = ColorWell((x2, y, w2, h + 10), callback = self.redraw, color=NSColor.blackColor())
-		y += dy + 10
+		self.w.controls.onCurveStrokeLabel = TextBox((x1, y, w1, h), 'Curve Point Outline')
+		self.w.controls.onCurveStrokeColor = ColorWell((x2, y, w2, h + 15), callback = self.redraw, color=NSColor.blackColor())
+		y += dy + 15
 
 		# offCurvePoint
 		self.w.controls.offCurvePointLabel = TextBox((x1, y, w1, h), 'Offcurve Point')
-		self.w.controls.offCurvePointColor = ColorWell((x2, y, w2, h + 10), callback = self.redraw, color=NSColor.blackColor())
-		y += dy + 10
+		self.w.controls.offCurvePointColor = ColorWell((x2, y, w2, h + 15), callback = self.redraw, color=NSColor.blackColor())
+		y += dy + 15
 		# offCurveStroke
-		self.w.controls.offCurveStrokeLabel = TextBox((x1, y, w1, h), 'Offcurve Stroke')
-		self.w.controls.offCurveStrokeColor = ColorWell((x2, y, w2, h + 10), callback = self.redraw, color=NSColor.blackColor())
-		y += dy + 10
+		self.w.controls.offCurveStrokeLabel = TextBox((x1, y, w1, h), 'Offcurve Point Outline')
+		self.w.controls.offCurveStrokeColor = ColorWell((x2, y, w2, h + 15), callback = self.redraw, color=NSColor.blackColor())
+		y += dy + 15
 		
 
 		# handlebar color
 		self.w.controls.handleBarLabel = TextBox((x1, y, w1, h), 'Handle Bar')
-		self.w.controls.handleBarColor = ColorWell((x2, y, w2, h + 10), callback = self.redraw, color=NSColor.blackColor())
-		y += dy + 10
+		self.w.controls.handleBarColor = ColorWell((x2, y, w2, h + 15), callback = self.redraw, color=NSColor.blackColor())
+		y += dy + 15
 
 		# removeOverlap
 		self.w.controls.removeOverlapLabel = TextBox((x1, y, w1, h), 'Remove Overlap')
@@ -204,8 +204,8 @@ class GlyphShowcaser:
 
 		# coordinates color
 		self.w.controls.coordinatesColorLabel = TextBox((x1, y, w1, h), 'Coordinates Color')
-		self.w.controls.coordinatesColor = ColorWell((x2, y, w2, h + 10), callback = self.redraw, color=NSColor.grayColor())
-		y += dy + 10
+		self.w.controls.coordinatesColor = ColorWell((x2, y, w2, h + 15), callback = self.redraw, color=NSColor.grayColor())
+		y += dy + 15
 
 		# displayMetrics
 		self.w.controls.displayMetricsLabel = TextBox((x1, y, w1, h), 'Display Metrics')
@@ -214,8 +214,8 @@ class GlyphShowcaser:
 
 		# Metrics color
 		self.w.controls.metricsColorLabel = TextBox((x1, y, w1, h), 'Metrics Color')
-		self.w.controls.metricsColor = ColorWell((x2, y, w2, h + 10), callback = self.redraw, color = NSColor.grayColor())
-		y += dy + 10
+		self.w.controls.metricsColor = ColorWell((x2, y, w2, h + 15), callback = self.redraw, color = NSColor.grayColor())
+		y += dy + 15
 
 		# displayBluezones
 		self.w.controls.displayBluezonesLabel = TextBox((x1, y, w1, h), 'Display Bluezones')
@@ -224,9 +224,14 @@ class GlyphShowcaser:
 
 		# Bluezones color
 		self.w.controls.bluezonesColorLabel = TextBox((x1, y, w1, h), 'Bluezones Color')
-		self.w.controls.bluezonesColor = ColorWell((x2, y, w2, h + 10), callback = self.redraw, color = NSColor.colorWithRed_green_blue_alpha_(.5, 1, 1, .3))
-		y += dy + 10
+		self.w.controls.bluezonesColor = ColorWell((x2, y, w2, h + 15), callback = self.redraw, color = NSColor.colorWithRed_green_blue_alpha_(.5, 1, 1, .3))
+		y += dy + 15
 
+		# infotext
+		self.w.controls.infotextLabel = TextBox((x1, y, w1, h), 'Infotext Size')
+		self.w.controls.infotextSlider = Slider((x2, y, w2-40, h + t), minValue = 1, maxValue = 24, value = 6, callback = self.infotextSliderChanged)
+		self.w.controls.infotextValue = EditText((w2-35, y, w2, h + t), str(round(float(self.w.controls.infotextSlider.get()))), callback = self.infotextValueChanged, continuous = False)
+		y += dy + t
 
 		# export as
 		self.w.controls.exportText = TextBox((x1, y, w1, h), 'Export as:')
@@ -292,15 +297,22 @@ class GlyphShowcaser:
 		self.redraw(sender)
 
 	def makeNodesOutlineColCheckCallback(self, sender):
-		
 		self.redraw(sender)
 
 	def displayCoordinatesCheckCallback(self, sender):
-
 		self.redraw(sender)
 
 	def displayBluezonesCheckCallback(self, sender):
+		self.redraw(sender)
 
+	def infotextSliderChanged(self, sender):
+		v = round(float(self.w.controls.infotextSlider.get()))
+		self.w.controls.infotextValue.set(str(v))
+		self.redraw(sender)
+
+	def infotextValueChanged(self, sender):
+		v = round(float(self.w.controls.infotextValue.get()))
+		self.w.controls.infotextSlider.set(v)
 		self.redraw(sender)
 
 	def exportAs(self):
@@ -421,12 +433,12 @@ class GlyphShowcaser:
 		displayBluezones = self.w.controls.displayBluezonesCheck.get()
 		bluezonesColor = self.w.controls.bluezonesColor.get()
 
+		i = self.w.controls.infotextSlider.get()
+
 		glyphsToProcess = self.glyphsToProcess()
 		
 		s = nodeSize
 		r = nodeSizeRatio * s
-
-		i = 6
 
 		# Drawing
 		drawBot.newDrawing()
