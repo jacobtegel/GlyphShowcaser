@@ -1,267 +1,608 @@
-# Drawbot
+# menuTitle: Font Overlayer
 
 '''
 Overlay Fonts!
-
-FontOverlayer is another modified version of GlyphShowcaser, using the LayerOverlayer logic, but overlaying currently open font files with each other. Multiple styles of one Family or variously different fonts. Stack it and save it.
+FontOverlayer is a modified version of GlyphShowcaser created to overlay open font files with each other. 
+Multiple styles of one Family or variously different fonts. Stack it and export it as PDF, SVG or PNG; change colours, Node Shapes and more.
 
 Jacob Tegel 2024-2025
 '''
-
-import AppKit
+import drawBot
 import os
-from datetime import datetime
-from mojo.roboFont import CurrentFont, CurrentGlyph, RGlyph
+
+from vanilla import *
+from AppKit import *
+from mojo.UI import Message
 from mojo.pens import DecomposePointPen
-from drawBot import *
+from drawBot.ui.drawView import DrawView
+
+from datetime import datetime
 
 time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-margin = 100
 
 fonts = AllFonts()
 
 if not fonts:
 	raise ValueError("No fonts open.")
 
-for f in fonts:
-	print(f.info.familyName, f.info.styleName)
+class FontOverlayer:
 
-fontHeight = (fonts[0].info.ascender + margin) + -(fonts[0].info.descender - (margin / 2))
-name = f"{fonts[0].info.familyName}-{fonts[0].info.styleName}"
-fontName = name.replace(" ","-")
+	def __init__(self):
 
-Variable([
+		self.winWidth = 1000
+		self.winHeight = 1250
+		self.sidebarWidth = 325
+		self.sidebarHeight = 1200
 
-		dict(name="glyphSelection", ui="RadioGroup", args=dict(titles=['Current Glyph', 'Selected Glyphs', 'All Glyphs'], isVertical=True)),
-		
-		dict(name="glyphAlign", ui="RadioGroup", args=dict(titles=['left', 'center', 'right'], isVertical=True)),
-		
-		dict(name="margin", ui="Slider", args=dict(value=10, minValue=0, maxValue=500)),
-	
-		dict(name="artboardHeight", ui="RadioGroup", args=dict(titles=['Font Height', 'Glyph Height'], isVertical=True)),
+		self.nodeStackSize = 0
 
-		dict(name="showNodes", ui="CheckBox", args=dict(value=True)),
-	 
-		dict(name="oncurveNodeShape", ui="RadioGroup", args=dict(titles=['Circle', 'Rectangle', 'Cross'], isVertical=True), value = 0),
+		self.w = Window((self.winWidth, self.winHeight), 'Font Overlayer', (100, 100))
+		self.w.controls = Group((-self.sidebarWidth, 10, self.sidebarWidth, self.sidebarHeight))
+
+		x1 = 10
+		x2 = 160
 		
-		dict(name="offcurveNodeShape", ui="RadioGroup", args=dict(titles=['Circle', 'Rectangle', 'Cross'], isVertical=True), value = 0),
+		y = 10
 		
-		dict(name="nodeSize", ui="Slider", args=dict(value=5, minValue=1, maxValue=10)),
+		w1 = 160
+		w2 = -10
 		
-		dict(name="nodeRatio", ui="Slider", args=dict(value=1, minValue=0, maxValue=1)),
+		h = 20
+
+		dy = h + 15
+
+		t = 5
+
+		# glyph selection
+		self.w.controls.glyphSelectionLabel = TextBox((x1, y, w1, h), 'Glyph Selection')
+		self.w.controls.glyphSelection = VerticalRadioGroup((x2, y-2.5, w2, h * 3), ['Current Glyph', 'Selected Glyphs', 'All Glyphs'], callback = self.redraw)
+		self.w.controls.glyphSelection.set(0)
+		y += dy + h * 2
+
+		# artboard Height
+		self.w.controls.artboardHeightLabel = TextBox((x1, y, w1, h), 'Artboard Height')
+		self.w.controls.artboardHeight = VerticalRadioGroup((x2, y-2.5, w2, h * 2), ['Font Height', 'Glyph Height'], callback = self.redraw)
+		self.w.controls.artboardHeight.set(0)
+		y += dy + h
+
+		# glyph Alignment
+		self.w.controls.glyphAlignLabel = TextBox((x1, y, w1, h), 'Glyph Alignment')
+		self.w.controls.glyphAlign = VerticalRadioGroup((x2, y-2.5, w2, h * 3), ['left', 'center', 'right'], callback = self.redraw)
+		self.w.controls.glyphAlign.set(1)
+		y += dy + h * 2
+
+		# margin
+		self.w.controls.marginLabel = TextBox((x1, y, w1, h), 'Margin')
+		self.w.controls.marginSlider = Slider((x2, y, w2-40, h + t), minValue = 0, maxValue = 500, value = 100, callback = self.marginSliderChanged)
+		self.w.controls.marginValue = EditText((w2-35, y, w2, h + t), str(round(float(self.w.controls.marginSlider.get()))), callback = self.marginValueChanged, continuous = False)
+		y += dy + t
+
+		# showNodes
+		self.w.controls.showNodesLabel = TextBox((x1, y, w1, h), 'Show Nodes')
+		self.w.controls.showNodesCheck = CheckBox((x2, y, w2, h), '', callback = self.redraw, value = True)
+		y += dy
+
+		# cornerNodeShape
+		self.w.controls.cornerNodeShapeLabel = TextBox((x1, y, w1, h), 'Corner Point Shape')
+		self.w.controls.cornerNodeShape = VerticalRadioGroup((x2, y-2.5, w2, h * 4), ['Circle', 'Rectangle', 'Triangle', 'Cross'], callback = self.redraw)
+		self.w.controls.cornerNodeShape.set(1)
+		y += dy + 3 * h
+
+		# smoothCornerNodeShape
+		self.w.controls.smoothCornerNodeShapeLabel = TextBox((x1, y, w1, h), 'Smooth Corner Point')
+		self.w.controls.smoothCornerNodeShape = VerticalRadioGroup((x2, y-2.5, w2, h * 4), ['Circle', 'Rectangle', 'Triangle', 'Cross'], callback = self.redraw)
+		self.w.controls.smoothCornerNodeShape.set(2)
+		y += dy + 3 * h
+
+		# onCurveNodeShape
+		self.w.controls.onCurveNodeShapeLabel = TextBox((x1, y, w1, h), 'Curve Point Shape')
+		self.w.controls.onCurveNodeShape = VerticalRadioGroup((x2, y-2.5, w2, h * 4), ['Circle', 'Rectangle', 'Triangle', 'Cross'], callback = self.redraw)
+		self.w.controls.onCurveNodeShape.set(0)
+		y += dy + 3 * h
+
+		# offCurveNodeShape
+		self.w.controls.offCurveNodeShapeLabel = TextBox((x1, y, w1, h), 'Offcurve Point Shape')
+		self.w.controls.offCurveNodeShape = VerticalRadioGroup((x2, y-2.5, w2, h * 4), ['Circle', 'Rectangle', 'Triangle', 'Cross'], callback = self.redraw)
+		self.w.controls.offCurveNodeShape.set(0)
+		y += dy + 3 * h
+
+		# nodeSize
+		self.w.controls.nodeSizeLabel = TextBox((x1, y, w1, h), 'Node Size')
+		self.w.controls.nodeSizeSlider = Slider((x2, y, w2-40, h + t), minValue = 1, maxValue = 10, value = 5, callback = self.nodeSizeSliderChanged)
+		self.w.controls.nodeSizeValue = EditText((w2-35, y, w2, h + t), str(round(float(self.w.controls.nodeSizeSlider.get()), 1)), callback = self.nodeSizeValueChanged, continuous = False)
+		y += dy + t
+
+		# nodeSizeRatio
+		self.w.controls.nodeSizeRatioLabel = TextBox((x1, y, w1, h), 'Node Size Ratio')
+		self.w.controls.nodeSizeRatioSlider = Slider((x2, y, w2-40, h + t), minValue = 0, maxValue = 2, value = 1, callback = self.nodeSizeRatioSliderChanged)
+		self.w.controls.nodeSizeRatioValue = EditText((w2-35, y, w2, h + t), str(round(float(self.w.controls.nodeSizeRatioSlider.get()), 1)), callback = self.nodeSizeRatioValueChanged, continuous = False)
+		y += dy + t
+
+		# bg Color
+		self.w.controls.backgroundColorLabel = TextBox((x1, y, w1, h), 'Background Color')
+		self.w.controls.backgroundColor = ColorWell((x2, y, w2, h + 15), callback = self.redraw, color = NSColor.colorWithRed_green_blue_alpha_(0, 0, 0, 0))
+		y += dy + 15
+
+		# fill color
+		self.w.controls.glyphColorLabel = TextBox((x1, y, w1, h), 'Glyph Color')
+		self.w.controls.glyphColor = ColorWell((x2, y, w2, h + 15), callback = self.redraw, color = NSColor.colorWithRed_green_blue_alpha_(1, 1, 1, 0))
+		y += dy + 15
+
+		# glyph Outline
+		self.w.controls.glyphOutlineLabel = TextBox((x1, y, w1, h), 'Glyph Outline')
+		self.w.controls.glyphOutlineCheck = CheckBox((x2, y, w2, h), '', callback = self.redraw, value = True)
+		y += dy
+
+		# outlineColor
+		self.w.controls.outlineColorLabel = TextBox((x1, y, w1, h), 'Outline Color')
+		self.w.controls.outlineColor = ColorWell((x2, y, w2, h + 15), callback = self.redraw, color = NSColor.colorWithRed_green_blue_alpha_(0, 0, 0, 1))
+		y += dy + 15
+
+		# outline thickness
+		self.w.controls.outlineThicknessLabel = TextBox((x1, y, w1, h), 'Outline Thickness')
+		self.w.controls.outlineThicknessSlider = Slider((x2, y, w2-40, h + t), minValue = 1, maxValue = 5, value = 1, callback = self.outlineThicknessSliderChanged)
+		self.w.controls.outlineThicknessValue = EditText((w2-35, y, w2, h + t), str(round(float(self.w.controls.outlineThicknessSlider.get()), 1)), callback = self.outlineThicknessValueChanged, continuous = False)
+		y += dy + t
+
+		# removeOverlap
+		self.w.controls.removeOverlapLabel = TextBox((x1, y, w1, h), 'Remove Overlap')
+		self.w.controls.removeOverlapCheck = CheckBox((x2, y, w2, h), '', callback = self.redraw, value = True)
+		y += dy
+
+		# decomposeComponents
+		self.w.controls.decomposeComponentsLabel = TextBox((x1, y, w1, h), 'Decompose Comps')
+		self.w.controls.decomposeComponentsCheck = CheckBox((x2, y, w2, h), '', callback = self.redraw, value = True)
+		y += dy
+
+		# tint fonts
+		self.w.controls.tintFontsLabel = TextBox((x1, y, w1, h), 'Tint Fonts')
+		self.w.controls.tintFontsCheck = CheckBox((x2, y, w2, h), '', callback = self.redraw, value = True)
+		y += dy
+
+		# tint intensity
+		self.w.controls.tintIntensityLabel = TextBox((x1, y, w1, h), 'Tint Intensity')
+		self.w.controls.tintIntensitySlider = Slider((x2, y, w2-40, h + t), minValue = 0, maxValue = 1, value = .5, callback = self.tintIntensitySliderChanged)
+		self.w.controls.tintIntensityValue = EditText((w2-35, y, w2, h + t), str(round(float(self.w.controls.tintIntensitySlider.get()), 1)), callback = self.tintIntensityValueChanged, continuous = False)
+		y += dy + t
+
+		# export as
+		self.w.controls.exportText = TextBox((x1, y, w1, h), 'Export as:')
+		self.w.controls.exportPdf = CheckBox((x2, y, w2, h), 'PDF')
+		y += dy -10
+		self.w.controls.exportSvg = CheckBox((x2, y, w2, h), 'SVG')
+		y += dy -10
+		self.w.controls.exportPng = CheckBox((x2, y, w2, h), 'PNG')
+		y += dy
+
+		# close
+		self.w.closeButton = Button(((-self.sidebarWidth - 10), - h - h / 2, self.sidebarWidth / 2 - 5, h), 'Close', callback=self.close)
+		# export
+		self.w.exportButton = Button((-self.sidebarWidth / 2 - 5, - h - h / 2, self.sidebarWidth / 2 - 5, h), 'Export', callback=self.exportButtonCallback)
+
+		self.w.setDefaultButton(self.w.exportButton)
+
+		# view = self.w.controls.getNSView()
+		self.w.scrollView = ScrollView((-(self.sidebarWidth) - 10, 10, self.sidebarWidth, - (10 + 10 + h)), self.w.controls.getNSView(), autohidesScrollers=True, drawsBackground = False)
+		self.w.preview = DrawView((10, 10, -self.sidebarWidth - 20, -10))
 		
-		dict(name="backgroundColor", ui="ColorWell", args=dict(color=AppKit.NSColor.colorWithSRGBRed_green_blue_alpha_(1, 1, 1, 0))),
+		self.w.open()
+		self.redraw(None)		
+
+	def marginSliderChanged(self, sender):
+		v = round(float(self.w.controls.marginSlider.get()))
+		self.w.controls.marginValue.set(str(v))
+		self.redraw(sender)
+
+	def marginValueChanged(self, sender):
+		v = round(float(self.w.controls.marginValue.get()))
+		self.w.controls.marginSlider.set(v)
+		self.redraw(sender)
+
+	def outlineThicknessSliderChanged(self, sender):
+		v = round(float(self.w.controls.outlineThicknessSlider.get()), 1)
+		self.w.controls.outlineThicknessValue.set(str(v))
+		self.redraw(sender)
+
+	def outlineThicknessValueChanged(self, sender):
+		v = round(float(self.w.controls.outlineThicknessValue.get()), 1)
+		self.w.controls.outlineThicknessSlider.set(v)
+		self.redraw(sender)
+
+	def nodeSizeSliderChanged(self, sender):
+		v = round(float(self.w.controls.nodeSizeSlider.get()), 1)
+		self.w.controls.nodeSizeValue.set(str(v))
+		self.redraw(sender)
+
+	def nodeSizeValueChanged(self, sender):
+		v = round(float(self.w.controls.nodeSizeValue.get()), 1)
+		self.w.controls.nodeSizeSlider.set(v)
+		self.redraw(sender)
+
+	def nodeSizeRatioSliderChanged(self, sender):
+		v = round(float(self.w.controls.nodeSizeRatioSlider.get()), 1)
+		self.w.controls.nodeSizeRatioValue.set(str(v))
+		self.redraw(sender)
+
+	def nodeSizeRatioValueChanged(self, sender):
+		v = round(float(self.w.controls.nodeSizeRatioValue.get()), 1)
+		self.w.controls.nodeSizeRatioSlider.set(v)
+		self.redraw(sender)
+
+	def tintIntensitySliderChanged(self, sender):
+		v = round(float(self.w.controls.tintIntensitySlider.get()), 2)
+		self.w.controls.tintIntensityValue.set(str(v))
+		self.redraw(sender)
+
+	def tintIntensityValueChanged(self, sender):
+		v = round(float(self.w.controls.tintIntensityValue.get()), 2)
+		self.w.controls.tintIntensitySlider.set(v)
+		self.redraw(sender)
+
+	def exportAs(self):
+
+		exportPdf = self.w.controls.exportPdf.get()
+		exportSvg = self.w.controls.exportSvg.get()
+		exportPng = self.w.controls.exportPng.get()
+
+		return exportPdf, exportSvg, exportPng
+
+	def exportButtonCallback(self, sender):
+		self.redraw(sender)
+		self.export(sender)	
+
+	def glyphsToProcess(self):
 		
-		dict(name="strokeColor", ui="ColorWell", args=dict(color=AppKit.NSColor.colorWithSRGBRed_green_blue_alpha_(0, 0, 0, 1))),
+		glyphSelection = self.w.controls.glyphSelection.get()
+
+		# Setup
+		glyphsToProcess = []
+
+		# Current glyph
+		if glyphSelection == 0:
+			glyphsToProcess = [CurrentGlyph().name]
+
+		# Selected glyphs    
+		elif glyphSelection == 1:
+			glyphsToProcess = [fonts[0].selectedGlyphNames]
+
+		# All glyphs
+		elif glyphSelection == 2:
+			glyphsToProcess = [g.name for g in fonts[0] if g.contours]
+
+		return glyphsToProcess
+
+	def drawNodes(self, x, y, s, shape, pointColor, strokeColor, idx):
+		outlineThickness = self.w.controls.outlineThicknessSlider.get()
+		drawBot.strokeWidth(outlineThickness)
+
+		drawBot.fill(pointColor)
+		drawBot.stroke(strokeColor)
+
+		if shape == 0:
+								
+			drawBot.oval(x - s, y - s, s * 2, s * 2)
 		
-		dict(name="outlineThickness", ui="Slider", args=dict(value=1, minValue=1, maxValue=10)),
+		elif shape == 1:
+							
+			drawBot.rect(x - s, y - s, s * 2, s * 2)
+							
+		elif shape == 2:
+			s *= 1.1
+			drawBot.polygon((x - s, y - s), (x + s, y - s), (x, y + s))
+
+		elif shape == 3:
+
+			drawBot.stroke(pointColor)
+			drawBot.line((x - s, y - s), (x + s, y + s))
+			drawBot.line((x - s, y + s), (x + s, y - s))
+
+
+	def redraw(self, sender):
+
+		#Variables
+		glyphSelection = self.w.controls.glyphSelection.get()
+		
+		margin = self.w.controls.marginSlider.get()
+		artboardHeight = self.w.controls.artboardHeight.get()
+
+		glyphAlign = self.w.controls.glyphAlign.get()
+		
+		backgroundColor = self.w.controls.backgroundColor.get()
+		glyphColor = self.w.controls.glyphColor.get()
+		glyphOutline = self.w.controls.glyphOutlineCheck.get()
+		
+		outlineColor = self.w.controls.outlineColor.get()
+		outlineThickness = self.w.controls.outlineThicknessSlider.get()
+		
+		showNodes = self.w.controls.showNodesCheck.get()
+		
+		cornerNodeShape = self.w.controls.cornerNodeShape.get()
+		smoothCornerNodeShape = self.w.controls.smoothCornerNodeShape.get()
+
+		onCurveNodeShape = self.w.controls.onCurveNodeShape.get()
+		
+		offCurveNodeShape = self.w.controls.offCurveNodeShape.get()
+		
+		nodeSize = self.w.controls.nodeSizeSlider.get()
+		nodeSizeRatio = self.w.controls.nodeSizeRatioSlider.get()
 				
-		dict(name="removeOverlap", ui="CheckBox", args=dict(value=True)),
-				
-		dict(name="tintFonts", ui="CheckBox", args=dict(value=True)),
+		decomposeComponents = self.w.controls.decomposeComponentsCheck.get()
+		removeOverlap = self.w.controls.removeOverlapCheck.get()
 		
-		dict(name="tintIntensity", ui="Slider", args=dict(value=.8, minValue=0, maxValue=1)),
-	
-		dict(name="exportAs", ui="RadioGroup", args=dict(titles=['PDF', 'SVG', 'PNG'], isVertical=True))
+		tintFonts = self.w.controls.tintFontsCheck.get()
+		tintIntensity = self.w.controls.tintIntensitySlider.get()
+
+		glyphsToProcess = self.glyphsToProcess()
 		
-		], globals())
+		s = nodeSize
+		r = nodeSizeRatio * s
 
-s = nodeSize
-r = nodeRatio * nodeSize
+		fontHeight = (fonts[0].info.ascender + margin) + -(fonts[0].info.descender - (margin / 2))
+		name = f"{fonts[0].info.familyName}-{fonts[0].info.styleName}"
+		fontName = name.replace(" ","-")
 
-glyphNamesToProcess = []
+		# Drawing
+		drawBot.newDrawing()
 
-if glyphSelection == 0:
-	glyphNamesToProcess = [CurrentGlyph().name]
-
-elif glyphSelection == 1:
-	glyphNamesToProcess = list(fonts[0].selectedGlyphNames)
-
-elif glyphSelection == 2:
-	glyphNamesToProcess = [g.name for g in fonts[0] if g.contours]
-
-for glyphName in glyphNamesToProcess:
+		for glyphName in glyphsToProcess:
 	
-	glyphs = []
-	for font in fonts:
-		if glyphName in font and font[glyphName].contours:
-			glyphs.append(font[glyphName])
-	if not glyphs:
-		continue
+			# Collect corresponding glyphs from all open fonts
+			glyphs = []
+			for font in fonts:
+				try: 
+					if glyphName in font and font[glyphName].contours:
+						glyphs.append(font[glyphName])
+				except Exception as e:
+					Message('Error', informativeText = str(e))
+			
+			if not glyphs:
+				continue
 
-	font = fonts[0]
-	refGlyph = glyphs[0]
-	
-	print(refGlyph)
-
-	bounds = refGlyph.bounds
-	
-	if bounds:
-		xMin, yMin, xMax, yMax = bounds
-	else:
-		xMin, yMin, xMax, yMax = 0, 0, refGlyph.width, 0
-	
-	glyphWidth = refGlyph.width
-	glyphHeight = abs(yMax - yMin)
-	
-	if artboardHeight == 0:
-		height = (font.info.ascender + margin) + -(font.info.descender - (margin / 2))
-	else:
-		height = (glyphHeight + margin)
-	
-	pwidth = glyphWidth + margin
-	pheight = height
-
-	# Alignment offset
-	if glyphAlign == 0:  # left
-		xOffset = margin / 2 - xMin
-	elif glyphAlign == 1:  # center
-		xOffset = (pwidth - (xMax - xMin)) / 2 - xMin
-	elif glyphAlign == 2:  # right
-		xOffset = pwidth - (xMax - xMin) - xMin - margin / 2
-	else:
-		xOffset = margin / 2 - xMin
-
-	newPage(pwidth, pheight)
-	fill(backgroundColor)
-	rect(0, 0, pwidth, pheight)
-	
-	baseR, baseG, baseB, baseA = strokeColor.redComponent(), strokeColor.greenComponent(), strokeColor.blueComponent(), strokeColor.alphaComponent()
-	numFonts = len(fonts)
-
-	for idx, glyph in enumerate(glyphs):
-		
-		c = RGlyph()
-		pen = c.getPointPen()
-		decomposePen = DecomposePointPen(glyph.layer, pen)
-		glyph.drawPoints(decomposePen)
-		if c is None or not c.contours:
-			continue
-		if removeOverlap:
-			c.removeOverlap()
-		
-		bounds = c.bounds
-		if bounds:
-			xMin, yMin, xMax, yMax = bounds
-		else:
-			xMin, yMin, xMax, yMax = 0, 0, c.width, 0
-
-		# Alignment offset for this glyph
-		if glyphAlign == 0:  # left
-			xOffset = margin / 2 - xMin
-		elif glyphAlign == 1:  # center
-			xOffset = (pwidth - (xMax - xMin)) / 2 - xMin
-		elif glyphAlign == 2:  # right
-			xOffset = pwidth - (xMax - xMin) - xMin - margin / 2
-		else:
-			xOffset = margin / 2 - xMin
-
-		with savedState():
+			font = fonts[0]
+			refGlyph = glyphs[0]
+			
+			bounds = refGlyph.bounds
+			
+			if bounds:
+				xMin, yMin, xMax, yMax = bounds
+			else:
+				xMin, yMin, xMax, yMax = 0, 0, refGlyph.width, 0
+			
+			glyphWidth = refGlyph.width
+			glyphHeight = abs(yMax - yMin)
+			
 			if artboardHeight == 0:
-				translate(xOffset, -font.info.descender + (margin / 2))
+				height = (font.info.ascender + margin) + -(font.info.descender - (margin / 2))
 			else:
-				translate(xOffset, -yMin + (margin / 2))
-		
-			factor = (numFonts - 1 - idx) / max(1, (numFonts - 1)) * tintIntensity  # 0.8 (lightest) to 0.0 (base color)
+				height = (glyphHeight + margin)
 			
-			if tintFonts:
-				tintedColor = AppKit.NSColor.colorWithSRGBRed_green_blue_alpha_(
-					baseR + (1.0 - baseR) * factor,
-					baseG + (1.0 - baseG) * factor,
-					baseB + (1.0 - baseB) * factor,
-					baseA + (1.0 - baseA) * factor
-				)
+			pwidth = glyphWidth + margin
+			pheight = height
+
+			# Alignment offset
+			if glyphAlign == 0:  # left
+				xOffset = margin / 2 - xMin
+			elif glyphAlign == 1:  # center
+				xOffset = (pwidth - (xMax - xMin)) / 2 - xMin
+			elif glyphAlign == 2:  # right
+				xOffset = pwidth - (xMax - xMin) - xMin - margin / 2
 			else:
-				tintedColor = strokeColor
+				xOffset = margin / 2 - xMin
+
+			drawBot.newPage(pwidth, pheight)
+			drawBot.fill(backgroundColor)
+			drawBot.rect(0, 0, pwidth, pheight)
 			
-			fill(None)
-			stroke(tintedColor)
-			strokeWidth(outlineThickness)
-			drawGlyph(c)
-			for contour in c:
-				for bPoint in contour.bPoints:
-					with savedState():
-						x, y = bPoint.anchor
-						translate(x, y)
+			glyphBaseR, glyphBaseG, glyphBaseB, glyphBaseA = glyphColor.redComponent(), glyphColor.greenComponent(), glyphColor.blueComponent(), glyphColor.alphaComponent()
+			strokeBaseR, strokeBaseG, strokeBaseB, strokeBaseA = outlineColor.redComponent(), outlineColor.greenComponent(), outlineColor.blueComponent(), outlineColor.alphaComponent()
+			backgroundBaseR, backgroundBaseG, backgroundBaseB, backgroundBaseA = backgroundColor.redComponent(), backgroundColor.greenComponent(), backgroundColor.blueComponent(), backgroundColor.alphaComponent()
+			
+			numFonts = len(fonts)
+
+			for idx, glyph in enumerate(glyphs):
+				
+				c = RGlyph()
+				pen = c.getPointPen()
+				decomposePen = DecomposePointPen(glyph.layer, pen)
+				glyph.drawPoints(decomposePen)
+				
+				if c is None or not c.contours:
+					continue
+				
+				if removeOverlap:
+					c.removeOverlap()
+				
+				# Calculate bounds and alignment for this glyph
+				bounds = c.bounds
+				if bounds:
+					xMin, yMin, xMax, yMax = bounds
+				else:
+					xMin, yMin, xMax, yMax = 0, 0, c.width, 0
+
+				# Alignment offset for this glyph
+				if glyphAlign == 0:  # left
+					xOffset = margin / 2 - xMin
+				elif glyphAlign == 1:  # center
+					xOffset = (pwidth - (xMax - xMin)) / 2 - xMin
+				elif glyphAlign == 2:  # right
+					xOffset = pwidth - (xMax - xMin) - xMin - margin / 2
+				else:
+					xOffset = margin / 2 - xMin
+
+				# Save and restore state for each glyph
+				with drawBot.savedState():
+					
+					if artboardHeight == 0:
+						drawBot.translate(xOffset, -font.info.descender + (margin / 2))
+					
+					else:
+						drawBot.translate(xOffset, -yMin + (margin / 2))
+				
+					# lightest to 0.0 (base color)
+					factor = (numFonts - 1 - idx) / max(1, (numFonts - 1)) * tintIntensity  
+					
+					# fade to black if glyphBase is white
+					if glyphBaseR > 0.95 and glyphBaseG > 0.95 and glyphBaseB > 0.95:
+						glyphTargetR, glyphTargetG, glyphTargetB, glyphTargetA = 0.0, 0.0, 0.0, 0.0
+					
+					elif backgroundBaseA != 0:
+						glyphTargetR, glyphTargetG, glyphTargetB, glyphTargetA = backgroundBaseR, backgroundBaseG, backgroundBaseB, backgroundBaseA
+
+					else:
+						glyphTargetR, glyphTargetG, glyphTargetB, glyphTargetA = 1.0, 1.0, 1.0, 1.0
+
+					# fade to black if glyphBase is white
+					if strokeBaseR > 0.95 and strokeBaseG > 0.95 and strokeBaseB > 0.95:
+						strokeTargetR, strokeTargetG, strokeTargetB, strokeTargetA = 0.0, 0.0, 0.0, 0.0
+					
+					elif backgroundBaseA != 0:
+						strokeTargetR, strokeTargetG, strokeTargetB, strokeTargetA = backgroundBaseR, backgroundBaseG, backgroundBaseB, backgroundBaseA
+					
+					else:
+						strokeTargetR, strokeTargetG, strokeTargetB, strokeTargetA = 1.0, 1.0, 1.0, 1.0
+
+					if tintFonts:
+						glyphColor = NSColor.colorWithSRGBRed_green_blue_alpha_(
+							glyphBaseR + (glyphTargetR - glyphBaseR) * factor,
+							glyphBaseG + (glyphTargetG - glyphBaseG) * factor,
+							glyphBaseB + (glyphTargetB - glyphBaseB) * factor,
+							# glyphBaseA
+							# glyphBaseA * (glyphTargetA - factor)
+							glyphBaseA + (glyphTargetA - glyphBaseA) * factor
+						)
+
+						outlineColor = NSColor.colorWithSRGBRed_green_blue_alpha_(
+							strokeBaseR + (strokeTargetR - strokeBaseR) * factor,
+							strokeBaseG + (strokeTargetG - strokeBaseG) * factor,
+							strokeBaseB + (strokeTargetB - strokeBaseB) * factor,
+							# strokeBaseA
+							# strokeBaseA * (strokeTargetA - factor)
+							strokeBaseA + (strokeTargetA - strokeBaseA) * factor
+						)
+
+					else:
+						glyphColor = glyphColor
+						outlineColor = outlineColor
+					
+					drawBot.fill(glyphColor)
+					
+					if glyphOutline:
+						outlineColor = outlineColor
+					else:
+						outlineColor = None
+					
+					drawBot.stroke(outlineColor)
+					drawBot.strokeWidth(outlineThickness)				
+					drawBot.drawGlyph(c)
+					
+					if showNodes:
+
+						for contour in c:
+
+							for bPoint in contour.bPoints:
+								
+								with drawBot.savedState():
+									x, y = bPoint.anchor
+									drawBot.translate(x, y)
+									drawBot.line ((0,0), bPoint.bcpIn)
+									drawBot.line ((0,0), bPoint.bcpOut)
 						
-						if showNodes:
-							stroke(tintedColor)
-							strokeWidth(1)
+							for e,segment in enumerate(contour):
+								
+								nextSegment = contour[(e + 1) % len(contour)]
 
-							line((0,0), bPoint.bcpIn)
-							line((0,0), bPoint.bcpOut)
-							
-						else:
-							continue
-							
-				for segment in contour:
-					for point in segment:
-					
-						if showNodes:
-					
-							if point.type == "offcurve":
-								stroke(tintedColor)
-								strokeWidth(1)
-								fill(tintedColor)
-								
-								if offcurveNodeShape == 0:
-								
-									oval(point.x-r, point.y-r, r*2, r*2)
-							
-								elif offcurveNodeShape == 1:
-								
-									rect(point.x-r, point.y-r, r*2, r*2)
-								
-								elif offcurveNodeShape == 2:
-								
-									line((point.x-r, point.y-r), (point.x+r, point.y+r))
-									line((point.x-r, point.y+r), (point.x+r, point.y-r))
-									
-							else:
-								stroke(tintedColor)
-								strokeWidth(1)
-								fill(tintedColor)
-		  
-								if oncurveNodeShape == 0:
-								
-									oval(point.x-s, point.y-s, s*2, s*2)
-							
-								elif oncurveNodeShape == 1:
-								
-									rect(point.x-s, point.y-s, s*2, s*2)
-								
-								elif oncurveNodeShape == 2:
-								
-									line((point.x-s, point.y-s), (point.x+s, point.y+s))
-									line((point.x-s, point.y+s), (point.x+s, point.y-s))
-								
+								if segment.type != nextSegment.type:
+									for point in segment:
+										if point.type != 'offcurve':
 
-if fonts[0] is not None and fonts[0].path:
-	font_path = os.path.dirname(fonts[0].path)
-	output_folder = f"{font_path}/FontOverlayer-Output"
-	if not os.path.exists(output_folder):
-		os.makedirs(output_folder)
+											x = point.x
+											y = point.y
+											
+											# Smooth Corner
+											if point.smooth:
+												self.drawNodes(x, y, s, smoothCornerNodeShape, glyphColor, outlineColor, idx)
+											# Corner Point
+											else:
+												self.drawNodes(x, y, s, cornerNodeShape, glyphColor, outlineColor, idx)
 
-if exportAs == 0:
+								elif segment.type == 'curve' and nextSegment.type == 'curve':
+									for point in segment:
+										if point.type != 'offcurve':
 
-	if glyphSelection == 0:
-		 saveImage(f"{output_folder}/{time}-FontOverlayer-{fontName}-{glyph.name}.pdf")
+											x = point.x
+											y = point.y
 
-	else:
-		 saveImage(f"{output_folder}/{time}-FontOverlayer-{fontName}.pdf")
-	
-if exportAs == 1:
+											# Curve Point
+											if point.smooth:
+												self.drawNodes(x, y, s, onCurveNodeShape, glyphColor, outlineColor, idx)
+											# Corner Point
+											else:
+												self.drawNodes(x, y, s, cornerNodeShape, glyphColor, outlineColor, idx)
+								
+								else:
+									# Corner Point
+									for point in segment:
+										if point.type != 'offcurve':
+											x = point.x 
+											y = point.y 
+											self.drawNodes(x, y, s, cornerNodeShape, glyphColor, outlineColor, idx)
 
-	if glyphSelection == 0:
-		saveImage(f"{output_folder}/{time}-FontOverlayer-{fontName}-{glyph.name}.svg", multipage = True)
+								for point in segment:
 
-	else:
-		saveImage(f"{output_folder}/{time}-FontOverlayer-{fontName}.svg", multipage = True)
-   
-if exportAs == 2:
-	
-	if glyphSelection == 0:
-		saveImage(f"{output_folder}/{time}-FontOverlayer-{fontName}-{glyph.name}.png", multipage = True)
-	
-	else:
-		saveImage(f"{output_folder}/{time}-FontOverlayer-{fontName}.png", multipage = True)
+									x = point.x
+									y = point.y
+
+									# Offcurve Point
+									if point.type == 'offcurve':
+
+										self.drawNodes(x, y, r, offCurveNodeShape, glyphColor, outlineColor, idx)
+
+		pdf = drawBot.pdfImage()
+
+		self.w.preview.setPDFDocument(pdf)
+
+		drawBot.endDrawing()
+
+	def export(self, sender):
+
+		glyphSelection = self.w.controls.glyphSelection.get()
+		glyphsToProcess = self.glyphsToProcess()
+
+		exportPdf, exportSvg, exportPng = self.exportAs()
+		
+		if fonts[0] is not None and fonts[0].path:
+			font_path = os.path.dirname(fonts[0].path)
+			output_folder = f"{font_path}/FontOverlayer"
+			
+			if not os.path.exists(output_folder):
+				os.makedirs(output_folder)
+
+		if exportPdf == 1:
+
+			if glyphSelection == 0:
+				for glyph in glyphsToProcess:
+					drawBot.saveImage(f'{export}/{time}-FontOverlayer-{fontName}-{glyph.name}.pdf')  
+			
+			elif glyphSelection == 1:  
+				drawBot.saveImage(f'{export}/{time}-FontOverlayer-{fontName}.pdf') 
+				
+		if exportSvg == 1:
+
+			if glyphSelection == 0:
+				for glyph in glyphsToProcess:
+					drawBot.saveImage(f'{export}/{time}-FontOverlayer-{fontName}-{glyph.name}.svg')
+			
+			elif glyphSelection == 1:
+				drawBot.saveImage(f'{export}/{time}-FontOverlayer-{fontName}-.svg')
+			   
+		if exportPng == 1:
+			for glyph in glyphsToProcess:
+				drawBot.saveImage(f'{export}/{time}-FontOverlayer-{fontName}-{glyph.name}.png', imageResolution=300)
+
+	def close(self, sender):
+		self.w.close()
+
+	def destroy(self):
+		self.w.close()
+
+FontOverlayer()
