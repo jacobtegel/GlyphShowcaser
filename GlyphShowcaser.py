@@ -619,11 +619,11 @@ class GlyphShowcaser:
 							else:
 								drawBot.text(f'{point.x}, {point.y}',(point.x,point.y - s - 10),align='center',)
 
-			pdf = drawBot.pdfImage()
+		pdf = drawBot.pdfImage()
 
-			self.w.preview.setPDFDocument(pdf)
+		self.w.preview.setPDFDocument(pdf)
 
-			drawBot.endDrawing()
+		drawBot.endDrawing()
 
 	def export(self, sender):
 
