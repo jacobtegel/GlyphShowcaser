@@ -33,9 +33,13 @@ Variable([
 		
 		dict(name="backgroundColor", ui="ColorWell", args=dict(color=AppKit.NSColor.colorWithSRGBRed_green_blue_alpha_(1, 1, 1, 0))),
 		
+		dict(name="useLayerColors", ui="CheckBox", args=dict(value=True)),
+		
+		dict(name="outlineColor", ui="ColorWell", args=dict(color=AppKit.NSColor.colorWithSRGBRed_green_blue_alpha_(0, 0, 0, 1))),
+		
 		dict(name="fillGlyphs", ui="CheckBox", args=dict(value=False)),
 		
-		dict(name="fillAlpha", ui="Slider", args=dict(value=.5, minValue=0, maxValue=1)),
+		dict(name="opacity", ui="Slider", args=dict(value=.5, minValue=0, maxValue=1)),
 		
 		dict(name="showNodes", ui="CheckBox", args=dict(value=True)),
 		
@@ -48,8 +52,6 @@ Variable([
 		dict(name="nodeSize", ui="Slider", args=dict(value=5, minValue=1, maxValue=10)),
 		
 		dict(name="nodeRatio", ui="Slider", args=dict(value=1, minValue=0, maxValue=1)),
-
-		dict(name="useLayerColors", ui="CheckBox", args=dict(value=True)),
 	
 		dict(name="removeOverlap", ui="CheckBox", args=dict(value=True)),
 	
@@ -77,7 +79,6 @@ elif glyphSelection == 2:
 	
 print(glyphsToProcess)
 
-# Process selected glyphs
 for glyph in glyphsToProcess:
 	# Skip empty or None glyphs
 	if glyph is None or not glyph.contours:
@@ -100,12 +101,10 @@ for glyph in glyphsToProcess:
 	else:
 		translate(margin/2, -glyph.bounds[1] + margin / 2)
 
-	# save name from initial glyphsToProcess loop
 	glyphName = glyph.name  
 
 	for layer in font.layers:
 		
-		# skip if layer doesn't have this glyph
 		if glyphName not in layer:
 			continue  
 
@@ -115,42 +114,36 @@ for glyph in glyphsToProcess:
 		pen = c.getPointPen()
 		
 		decomposePen = DecomposePointPen(layerGlyph.layer, pen)
-		layerGlyph.drawPoints(decomposePen)            
-		
-		# Skip empty glyphs
-		if c is None or not c.contours:
-			continue  
+		layerGlyph.drawPoints(decomposePen)             
 		
 		if removeOverlap:
 			c.removeOverlap()
 		
-		# Extract the layer color
+		# Extract layer color
 		layerColor = layer.color
 		
-		if useLayerColors:
-			if layerColor:
-				red, green, blue, alpha = layerColor
-				strokeColor = AppKit.NSColor.colorWithSRGBRed_green_blue_alpha_(red, green, blue, alpha)
-			else:
-				strokeColor = AppKit.NSColor.colorWithSRGBRed_green_blue_alpha_(0, 0, 0, 1)  # Default to black
+		if useLayerColors and layerColor:
+			red, green, blue, _ = layerColor
+			strokeColor = AppKit.NSColor.colorWithSRGBRed_green_blue_alpha_(red, green, blue, opacity)
 		else:
-			strokeColor = AppKit.NSColor.colorWithSRGBRed_green_blue_alpha_(0, 0, 0, 1)  # Default to black
+			red, green, blue = outlineColor.redComponent(), outlineColor.greenComponent(), outlineColor.blueComponent()
+			strokeColor = AppKit.NSColor.colorWithSRGBRed_green_blue_alpha_(red, green, blue, opacity)
 		
-		if not fillGlyphs:
-			fill(None)
-		else:
-			if useLayerColors:
-				if layerColor:
-					red, green, blue, _ = layerColor
-					fillColor = AppKit.NSColor.colorWithSRGBRed_green_blue_alpha_(red, green, blue, fillAlpha)
-				else:
-					fillColor = AppKit.NSColor.colorWithSRGBRed_green_blue_alpha_(0, 0, 0, 1)
+		stroke(strokeColor)
+		
+		if fillGlyphs:
+			if useLayerColors and layerColor:
+				red, green, blue, _ = layerColor
+				fillColor = AppKit.NSColor.colorWithSRGBRed_green_blue_alpha_(red, green, blue, opacity)
 			else:
-				fillColor = AppKit.NSColor.colorWithSRGBRed_green_blue_alpha_(0, 0, 0, 1)
+				red, green, blue = outlineColor.redComponent(), outlineColor.greenComponent(), outlineColor.blueComponent()
+				fillColor = AppKit.NSColor.colorWithSRGBRed_green_blue_alpha_(red, green, blue, opacity)
 				
 			fill(fillColor)
 		
-		stroke(strokeColor)
+		else:
+		    fill(None)
+		
 		strokeWidth(outlineThickness)
 					   
 		drawGlyph(c)
@@ -174,10 +167,10 @@ for glyph in glyphsToProcess:
 					for point in segment:
 						if showNodes:
 							if point.type == "offcurve":
+								print(strokeColor)
 								stroke(strokeColor)
 								strokeWidth(1)
 								fill(strokeColor)
-
 							
 								if offcurveNodeShape == 0:
 									oval(point.x-r, point.y-r, r*2, r*2)
@@ -194,8 +187,7 @@ for glyph in glyphsToProcess:
 								stroke(strokeColor)
 								strokeWidth(1)
 								fill(strokeColor)
-
-  
+								
 								if oncurveNodeShape == 0:
 									oval(point.x-s, point.y-s, s*2, s*2)
 					
@@ -213,7 +205,7 @@ if font is not None and font.path:
 	outputFolder = f"{fontPath}/LayerOverlayer" # create output folder inside of that folder
 
 	if not os.path.exists(outputFolder):
-		os.makedirs(outputFlder)
+		os.makedirs(outputFolder)
 
 if exportAs == 0:
 

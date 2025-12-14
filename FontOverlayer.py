@@ -24,6 +24,9 @@ fonts = AllFonts()
 
 if not fonts:
 	raise ValueError("No fonts open.")
+else:
+	name = f"{fonts[0].info.familyName}-{fonts[0].info.styleName}"
+	fontName = name.replace(" ","-")
 
 class FontOverlayer:
 
@@ -338,19 +341,16 @@ class FontOverlayer:
 		r = nodeSizeRatio * s
 
 		fontHeight = (fonts[0].info.ascender + margin) + -(fonts[0].info.descender - (margin / 2))
-		name = f"{fonts[0].info.familyName}-{fonts[0].info.styleName}"
-		fontName = name.replace(" ","-")
 
 		# Drawing
 		drawBot.newDrawing()
 
 		for glyphName in glyphsToProcess:
 	
-			# Collect corresponding glyphs from all open fonts
 			glyphs = []
 			for font in fonts:
 				try: 
-					if glyphName in font and font[glyphName].contours:
+					if glyphName in font and font[glyphName] is not None:
 						glyphs.append(font[glyphName])
 				except Exception as e:
 					Message('Error', informativeText = str(e))
@@ -401,16 +401,19 @@ class FontOverlayer:
 
 			for idx, glyph in enumerate(glyphs):
 				
-				c = RGlyph()
-				pen = c.getPointPen()
-				decomposePen = DecomposePointPen(glyph.layer, pen)
-				glyph.drawPoints(decomposePen)
+				c = glyph.copy()
 				
-				if c is None or not c.contours:
-					continue
-				
+				if decomposeComponents:
+					c.clear()
+					glyph.drawPoints(DecomposePointPen(glyph.font, c.getPointPen()))
+
 				if removeOverlap:
 					c.removeOverlap()
+
+				pen = c.getPointPen()
+
+				if c is None:
+					continue
 				
 				# Calculate bounds and alignment for this glyph
 				bounds = c.bounds
@@ -442,8 +445,8 @@ class FontOverlayer:
 					factor = (numFonts - 1 - idx) / max(1, (numFonts - 1)) * tintIntensity  
 					
 					# fade to black if glyphBase is white
-					if glyphBaseR > 0.95 and glyphBaseG > 0.95 and glyphBaseB > 0.95:
-						glyphTargetR, glyphTargetG, glyphTargetB, glyphTargetA = 0.0, 0.0, 0.0, 0.0
+					if glyphBaseR > 0.95 and glyphBaseG > 0.95 and glyphBaseB > 0.95 and backgroundBaseA != 0:
+						glyphTargetR, glyphTargetG, glyphTargetB, glyphTargetA = backgroundBaseR, backgroundBaseG, backgroundBaseB, backgroundBaseA
 					
 					elif backgroundBaseA != 0:
 						glyphTargetR, glyphTargetG, glyphTargetB, glyphTargetA = backgroundBaseR, backgroundBaseG, backgroundBaseB, backgroundBaseA
@@ -452,8 +455,8 @@ class FontOverlayer:
 						glyphTargetR, glyphTargetG, glyphTargetB, glyphTargetA = 1.0, 1.0, 1.0, 1.0
 
 					# fade to black if glyphBase is white
-					if strokeBaseR > 0.95 and strokeBaseG > 0.95 and strokeBaseB > 0.95:
-						strokeTargetR, strokeTargetG, strokeTargetB, strokeTargetA = 0.0, 0.0, 0.0, 0.0
+					if strokeBaseR > 0.95 and strokeBaseG > 0.95 and strokeBaseB > 0.95 and backgroundBaseA != 0:
+						strokeTargetR, strokeTargetG, strokeTargetB, strokeTargetA = backgroundBaseR, backgroundBaseG, backgroundBaseB, backgroundBaseA
 					
 					elif backgroundBaseA != 0:
 						strokeTargetR, strokeTargetG, strokeTargetB, strokeTargetA = backgroundBaseR, backgroundBaseG, backgroundBaseB, backgroundBaseA
@@ -493,6 +496,7 @@ class FontOverlayer:
 					
 					drawBot.stroke(outlineColor)
 					drawBot.strokeWidth(outlineThickness)				
+					
 					drawBot.drawGlyph(c)
 					
 					if showNodes:
@@ -571,11 +575,11 @@ class FontOverlayer:
 		exportPdf, exportSvg, exportPng = self.exportAs()
 		
 		if fonts[0] is not None and fonts[0].path:
-			font_path = os.path.dirname(fonts[0].path)
-			output_folder = f"{font_path}/FontOverlayer"
+			fontPath = os.path.dirname(fonts[0].path)
+			export = f"{fontPath}/FontOverlayer"
 			
-			if not os.path.exists(output_folder):
-				os.makedirs(output_folder)
+			if not os.path.exists(export):
+				os.makedirs(export)
 
 		if exportPdf == 1:
 

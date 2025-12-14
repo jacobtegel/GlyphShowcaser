@@ -7,13 +7,15 @@ Tool to showcase your Glyphs and export it as PDF, SVG or PNG; change colours, N
 Jacob Tegel 2024–2025
 '''
 
+import drawBot
+import os
+
 from vanilla import *
 from AppKit import NSColor, NSButton, NSView
 from mojo.UI import Message
-import drawBot
+from mojo.pens import DecomposePointPen
 from drawBot.ui.drawView import DrawView
-import traceback
-import os
+
 from datetime import datetime
 
 time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
@@ -446,7 +448,7 @@ class GlyphShowcaser:
 		for glyph in glyphsToProcess:
 			
 			# Skip empty or None glyphs
-			if glyph is None or not glyph.contours:
+			if glyph is None:
 				continue		
 
 			glyphHeight = abs(glyph.bounds[1]-glyph.bounds[3])
@@ -517,8 +519,9 @@ class GlyphShowcaser:
 
 			
 			if decomposeComponents:
-				c.decompose()
-		   
+				c.clear()
+				glyph.drawPoints(DecomposePointPen(CurrentFont(), c.getPointPen()))
+
 			if removeOverlap:
 			   c.removeOverlap()
 
@@ -636,7 +639,7 @@ class GlyphShowcaser:
 		exportPdf, exportSvg, exportPng = self.exportAs()
 		
 		if font.path:
-			url = os.path.dirname(font.path)
+			fontPath = os.path.dirname(font.path)
 			export = f'{url}/GlyphShowcaser'
 
 			if not os.path.exists(export):
