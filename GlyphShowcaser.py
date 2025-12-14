@@ -634,7 +634,7 @@ class GlyphShowcaser:
 		
 		if font.path:
 			fontPath = os.path.dirname(font.path)
-			export = f'{url}/GlyphShowcaser'
+			export = f'{fontPath}/GlyphShowcaser'
 
 			if not os.path.exists(export):
 				os.makedirs(export)

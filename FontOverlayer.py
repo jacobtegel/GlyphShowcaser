@@ -23,9 +23,9 @@ time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
 fonts = AllFonts()
 
 if not fonts:
-	raise ValueError("No fonts open.")
+	Message('Error', informativeText = 'No fonts open.')
 else:
-	name = f"{fonts[0].info.familyName}-{fonts[0].info.styleName}"
+	name = f"{fonts[0].info.familyName}-{fonts[0].info.styleName}-{fonts[-1].info.familyName}-{fonts[-1].info.styleName}"
 	fontName = name.replace(" ","-")
 
 class FontOverlayer:
@@ -265,7 +265,7 @@ class FontOverlayer:
 
 		# All glyphs
 		elif glyphSelection == 2:
-			glyphsToProcess = [g.name for g in fonts[0] if g.contours]
+			glyphsToProcess = [glyph.name for glyph in fonts[0] if glyph.contours]
 
 		return glyphsToProcess
 
@@ -324,7 +324,6 @@ class FontOverlayer:
 		nodeSize = self.w.controls.nodeSizeSlider.get()
 		nodeSizeRatio = self.w.controls.nodeSizeRatioSlider.get()
 				
-		decomposeComponents = self.w.controls.decomposeComponentsCheck.get()
 		removeOverlap = self.w.controls.removeOverlapCheck.get()
 		
 		tintFonts = self.w.controls.tintFontsCheck.get()
@@ -340,13 +339,13 @@ class FontOverlayer:
 		# Drawing
 		drawBot.newDrawing()
 
-		for glyphName in glyphsToProcess:
+		for glyph in glyphsToProcess:
 	
 			glyphs = []
-			for font in fonts:
+			for font in reversed(fonts):
 				try: 
-					if glyphName in font and font[glyphName] is not None:
-						glyphs.append(font[glyphName])
+					if glyph in font and font[glyph] is not None:
+						glyphs.append(font[glyph])
 				except Exception as e:
 					Message('Error', informativeText = str(e))
 			
@@ -398,7 +397,7 @@ class FontOverlayer:
 				
 				c = glyph.copy()
 				
-				if decomposeComponents:
+				if glyph.components:
 					c.clear()
 					glyph.drawPoints(DecomposePointPen(glyph.font, c.getPointPen()))
 
@@ -458,6 +457,12 @@ class FontOverlayer:
 					
 					else:
 						strokeTargetR, strokeTargetG, strokeTargetB, strokeTargetA = 1.0, 1.0, 1.0, 1.0
+
+					# do not fade transparency if transparency is 0
+					if glyphBaseA == 0:
+						glyphTargetA = 0
+					if strokeBaseA == 0:
+						strokeTargetA = 0
 
 					if tintFonts:
 						glyphColor = NSColor.colorWithSRGBRed_green_blue_alpha_(
@@ -569,7 +574,7 @@ class FontOverlayer:
 
 		exportPdf, exportSvg, exportPng = self.exportAs()
 		
-		if fonts[0] is not None and fonts[0].path:
+		if fonts[0].path:
 			fontPath = os.path.dirname(fonts[0].path)
 			export = f"{fontPath}/FontOverlayer"
 			
@@ -580,7 +585,7 @@ class FontOverlayer:
 
 			if glyphSelection == 0:
 				for glyph in glyphsToProcess:
-					drawBot.saveImage(f'{export}/{time}-FontOverlayer-{fontName}-{glyph.name}.pdf')  
+					drawBot.saveImage(f'{export}/{time}-FontOverlayer-{fontName}-{glyph}.pdf')  
 			
 			elif glyphSelection == 1:  
 				drawBot.saveImage(f'{export}/{time}-FontOverlayer-{fontName}.pdf') 
@@ -589,14 +594,14 @@ class FontOverlayer:
 
 			if glyphSelection == 0:
 				for glyph in glyphsToProcess:
-					drawBot.saveImage(f'{export}/{time}-FontOverlayer-{fontName}-{glyph.name}.svg')
+					drawBot.saveImage(f'{export}/{time}-FontOverlayer-{fontName}-{glyph}.svg')
 			
 			elif glyphSelection == 1:
 				drawBot.saveImage(f'{export}/{time}-FontOverlayer-{fontName}-.svg')
 			   
 		if exportPng == 1:
 			for glyph in glyphsToProcess:
-				drawBot.saveImage(f'{export}/{time}-FontOverlayer-{fontName}-{glyph.name}.png', imageResolution=300)
+				drawBot.saveImage(f'{export}/{time}-FontOverlayer-{fontName}-{glyph}.png', imageResolution=300)
 
 	def close(self, sender):
 		self.w.close()
