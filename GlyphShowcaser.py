@@ -35,7 +35,7 @@ class GlyphShowcaser:
 		self.winWidth = 1000
 		self.winHeight = 1250
 		self.sidebarWidth = 325
-		self.sidebarHeight = 1835
+		self.sidebarHeight = 1795
 
 		self.nodeStackSize = 0
 
@@ -192,11 +192,6 @@ class GlyphShowcaser:
 		# removeOverlap
 		self.w.controls.removeOverlapLabel = TextBox((x1, y, w1, h), 'Remove Overlap')
 		self.w.controls.removeOverlapCheck = CheckBox((x2, y, w2, h), '', callback = self.redraw, value = True)
-		y += dy
-
-		# decomposeComponents
-		self.w.controls.decomposeComponentsLabel = TextBox((x1, y, w1, h), 'Decompose Comps')
-		self.w.controls.decomposeComponentsCheck = CheckBox((x2, y, w2, h), '', callback = self.redraw, value = True)
 		y += dy
 		
 		# displayCoordinates
@@ -425,7 +420,6 @@ class GlyphShowcaser:
 		offCurvePointColor = self.w.controls.offCurvePointColor.get()
 		handleBarColor = self.w.controls.handleBarColor.get()
 		
-		decomposeComponents = self.w.controls.decomposeComponentsCheck.get()
 		removeOverlap = self.w.controls.removeOverlapCheck.get()
 		
 		displayCoordinates = self.w.controls.displayCoordinatesCheck.get()
@@ -518,7 +512,7 @@ class GlyphShowcaser:
 					Message('Error', informativeText=str(e))
 
 			
-			if decomposeComponents:
+			if glyph.components:
 				c.clear()
 				glyph.drawPoints(DecomposePointPen(CurrentFont(), c.getPointPen()))
 
