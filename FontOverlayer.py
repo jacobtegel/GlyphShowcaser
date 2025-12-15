@@ -24,9 +24,16 @@ fonts = AllFonts()
 
 if not fonts:
 	Message('Error', informativeText = 'No fonts open.')
+
 else:
-	name = f"{fonts[0].info.familyName}-{fonts[0].info.styleName}-{fonts[-1].info.familyName}-{fonts[-1].info.styleName}"
-	fontName = name.replace(" ","-")
+	try:
+		name = f"{fonts[0].info.familyName}-{fonts[0].info.styleName}-{fonts[-1].info.familyName}-{fonts[-1].info.styleName}"
+		fontName = name.replace(" ","-")
+		fontPath = f'{os.path.dirname(fonts[0].path)}'
+
+	except Exception as e:
+		Message('Error', informativeText = sr(e))
+
 
 class FontOverlayer:
 
@@ -173,7 +180,11 @@ class FontOverlayer:
 		y += dy
 
 		# close
-		self.w.closeButton = Button(((-self.sidebarWidth - 10), - h - h / 2, self.sidebarWidth / 2 - 5, h), 'Close', callback=self.close)
+		#self.w.closeButton = Button(((-self.sidebarWidth - 10), - h - h / 2, self.sidebarWidth / 2 - 5, h), 'Close', callback=self.close)
+		
+		# path Control
+		self.w.pathControl = PathControl(((-self.sidebarWidth - 10), - h - h / 2, self.sidebarWidth / 2 - 5, h), fontPath, pathStyle="popUp", callback=self.pathControlCallback)
+		
 		# export
 		self.w.exportButton = Button((-self.sidebarWidth / 2 - 5, - h - h / 2, self.sidebarWidth / 2 - 5, h), 'Export', callback=self.exportButtonCallback)
 
@@ -243,6 +254,10 @@ class FontOverlayer:
 		exportPng = self.w.controls.exportPng.get()
 
 		return exportPdf, exportSvg, exportPng
+
+	def pathControlCallback(self, sender):
+		
+		self.redraw(sender)
 
 	def exportButtonCallback(self, sender):
 		self.redraw(sender)
@@ -574,12 +589,10 @@ class FontOverlayer:
 
 		exportPdf, exportSvg, exportPng = self.exportAs()
 		
-		if fonts[0].path:
-			fontPath = os.path.dirname(fonts[0].path)
-			export = f"{fontPath}/FontOverlayer"
+		export = f"{fontPath}/FontOverlayer"
 			
-			if not os.path.exists(export):
-				os.makedirs(export)
+		if not os.path.exists(export):
+			os.makedirs(export)
 
 		if exportPdf == 1:
 

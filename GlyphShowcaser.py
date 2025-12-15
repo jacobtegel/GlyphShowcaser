@@ -25,9 +25,14 @@ font = CurrentFont()
 if font is None:
 	Message('Please open a font in RoboFont.')
 
-else: 
-	name = ( f'{font.info.familyName}-{font.info.styleName}')
-	fontName = name.replace(' ', '-')
+else:
+	try: 
+		name = ( f'{font.info.familyName}-{font.info.styleName}')
+		fontName = name.replace(' ', '-')
+		fontPath = f'{os.path.dirname(font.path)}'
+
+	except Exception as e:
+		Message('Error', informativeText = str(e))
 
 class GlyphShowcaser:
 	
@@ -240,7 +245,11 @@ class GlyphShowcaser:
 		y += dy
 
 		# close
-		self.w.closeButton = Button(((-self.sidebarWidth - 10), - h - h / 2, self.sidebarWidth / 2 - 5, h), 'Close', callback=self.close)
+		# self.w.closeButton = Button(((-self.sidebarWidth - 10), - h - h / 2, self.sidebarWidth / 2 - 5, h), 'Close', callback=self.close)
+		
+		# path Control
+		self.w.pathControl = PathControl(((-self.sidebarWidth - 10), - h - h / 2, self.sidebarWidth / 2 - 5, h), fontPath, pathStyle="popUp", callback=self.pathControlCallback)
+		
 		# export
 		self.w.exportButton = Button((-self.sidebarWidth / 2 - 5, - h - h / 2, self.sidebarWidth / 2 - 5, h), 'Export', callback=self.exportButtonCallback)
 
@@ -319,6 +328,10 @@ class GlyphShowcaser:
 		exportPng = self.w.controls.exportPng.get()
 
 		return exportPdf, exportSvg, exportPng
+
+	def pathControlCallback(self, sender):
+		
+		self.redraw(sender)
 
 	def exportButtonCallback(self, sender):
 		self.redraw(sender)
@@ -632,12 +645,10 @@ class GlyphShowcaser:
 
 		exportPdf, exportSvg, exportPng = self.exportAs()
 		
-		if font.path:
-			fontPath = os.path.dirname(font.path)
-			export = f'{fontPath}/GlyphShowcaser'
+		export = f'{fontPath}/GlyphShowcaser'
 
-			if not os.path.exists(export):
-				os.makedirs(export)
+		if not os.path.exists(export):
+			os.makedirs(export)
 
 		if exportPdf == 1:
 
