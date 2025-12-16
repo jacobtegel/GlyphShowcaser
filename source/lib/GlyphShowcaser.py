@@ -246,7 +246,11 @@ class GlyphShowcaser:
 
 		# close
 		# self.w.closeButton = Button(((-self.sidebarWidth - 10), - h - h / 2, self.sidebarWidth / 2 - 5, h), 'Close', callback=self.close)
-		
+
+		# view = self.w.controls.getNSView()
+		self.w.preview = DrawView((10, 10, -self.sidebarWidth - 20, -10))
+		self.w.scrollView = ScrollView((-(self.sidebarWidth) - 10, 10, self.sidebarWidth, - (10 + 10 + h)), self.w.controls.getNSView(), autohidesScrollers=True, drawsBackground = False)
+
 		# path Control
 		self.w.pathControl = PathControl(((-self.sidebarWidth - 10), - h - h / 2, self.sidebarWidth / 2 - 5, h), fontPath, pathStyle="popUp", callback=self.pathControlCallback)
 		
@@ -254,10 +258,6 @@ class GlyphShowcaser:
 		self.w.exportButton = Button((-self.sidebarWidth / 2 - 5, - h - h / 2, self.sidebarWidth / 2 - 5, h), 'Export', callback=self.exportButtonCallback)
 
 		self.w.setDefaultButton(self.w.exportButton)
-
-		# view = self.w.controls.getNSView()
-		self.w.scrollView = ScrollView((-(self.sidebarWidth) - 10, 10, self.sidebarWidth, - (10 + 10 + h)), self.w.controls.getNSView(), autohidesScrollers=True, drawsBackground = False)
-		self.w.preview = DrawView((10, 10, -self.sidebarWidth - 20, -10))
 		
 		self.w.open()
 		self.redraw(None)
@@ -640,37 +640,49 @@ class GlyphShowcaser:
 
 	def export(self, sender):
 
+		url = self.w.pathControl.get()
+
 		glyphSelection = self.w.controls.glyphSelection.get()
 		glyphsToProcess = self.glyphsToProcess()
 
 		exportPdf, exportSvg, exportPng = self.exportAs()
 		
-		export = f'{fontPath}/GlyphShowcaser'
+		export = f'{url}/GlyphShowcaser'
 
-		if not os.path.exists(export):
-			os.makedirs(export)
+		if not exportPdf and not exportSvg and not exportPng:
+			pass
 
-		if exportPdf == 1:
+		else:
+			try:
 
-			if glyphSelection == 0:
-				for glyph in glyphsToProcess:
-					drawBot.saveImage(f'{export}/{time}-GlyphShowcaser-{fontName}-{glyph.name}.pdf')  
-			
-			elif glyphSelection == 1:  
-				drawBot.saveImage(f'{export}/{time}-GlyphShowcaser-{fontName}.pdf') 
+				if not os.path.exists(export):
+					os.makedirs(export)
+
+				if exportPdf == 1:
+
+					if glyphSelection == 0:
+						for glyph in glyphsToProcess:
+							drawBot.saveImage(f'{export}/{time}-GlyphShowcaser-{fontName}-{glyph.name}.pdf')  
+					
+					elif glyphSelection == 1:  
+						drawBot.saveImage(f'{export}/{time}-GlyphShowcaser-{fontName}.pdf') 
+						
+				if exportSvg == 1:
+
+					if glyphSelection == 0:
+						for glyph in glyphsToProcess:
+							drawBot.saveImage(f'{export}/{time}-GlyphShowcaser-{fontName}-{glyph.name}.svg')
+					
+					elif glyphSelection == 1:
+						drawBot.saveImage(f'{export}/{time}-GlyphShowcaser-{fontName}-.svg')
+					   
+				if exportPng == 1:
+					for glyph in glyphsToProcess:
+						drawBot.saveImage(f'{export}/{time}-GlyphShowcaser-{fontName}-{glyph.name}.png', imageResolution=300)
+
+			except Exception as e:
 				
-		if exportSvg == 1:
-
-			if glyphSelection == 0:
-				for glyph in glyphsToProcess:
-					drawBot.saveImage(f'{export}/{time}-GlyphShowcaser-{fontName}-{glyph.name}.svg')
-			
-			elif glyphSelection == 1:
-				drawBot.saveImage(f'{export}/{time}-GlyphShowcaser-{fontName}-.svg')
-			   
-		if exportPng == 1:
-			for glyph in glyphsToProcess:
-				drawBot.saveImage(f'{export}/{time}-GlyphShowcaser-{fontName}-{glyph.name}.png', imageResolution=300)
+				Message(f'Export Failed', informativeText = str(e))
 
 	def close(self, sender):
 		self.w.close()
