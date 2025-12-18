@@ -1,0 +1,74 @@
+<p><img src="../resources/GlyphShowcaser-icon.png" alt="GlyphShowcaser icon" width = "100"></p>
+<h1 id="glyphshowcaser">GlyphShowcaser</h1>
+<p>A collection of scripts to generate images of glyphs without leaving RoboFont, or having to resort to screenshots.</p>
+<p>The main script, GlyphShowcaser is the initial version of these scripts, and therefore also has the most options, the other two scripts, LayerOverlayer and FontOverlayer are stripped down and modified versions of GlyphShowcaser fulfilling differrent operations (Overlaying the same glyph from different layers of the same font with each other; or overlaying the same glyph of different fonts with each other, respectively.)</p>
+<p><a href="#GSInterface">The GlyphShowcaser Interface</a></p>
+<p><a href="#LOFOControlDifferences">Differences in LayerOverlayer and FontOverlayer Controls</a></p>
+<hr>
+<h2 id="glyphshowcaser">GlyphShowcaser</h2>
+<p>Showcase your Drawings!</p>
+<p>Tool to showcase your Glyphs and export it as PDF, SVG or PNG.
+You can change colors, Node Shapes and more!</p>
+<p><img src="../resources/GlyphShowcaser.png" alt="Screenshot of GlyphShowcaser in use"></p>
+<hr>
+<h1 id="-a-id-gsinterface-the-interface-a-"><a id ="GSInterface"> The Interface </a></h1>
+<h2 id="drawing-board">Drawing Board</h2>
+<p>On the left side of the interface is the preview of the drawing, utilizing DrawBot’s DrawView.</p>
+<p>You can zoom in and out with a Trackpad, or <code>cmd +</code> and <code>cmd -</code></p>
+<h2 id="the-controlpanel">The Controlpanel</h2>
+<p>On the right side of the interface are the different controls for the script, here is where you can choose how you want your drawing to look like.</p>
+<p><strong>Glyph Selection</strong> determines which glyph or glyphs get drawn, can be set to <em>Current Glyph</em>, <em>Selected Glyphs</em> or <em>All Glyphs</em>, depending on the use</p>
+<p><strong>Margin</strong> adds padding between the glyph and the edges of the artboard</p>
+<p><strong>Artboard Height</strong> determines the artboard height, can be set to <em>Font Height</em>, calculated from the font’s vertical metrics or <em>Glyph Height</em>, calculated from the glyph’s bounds</p>
+<p><strong>Background Color</strong> determines the artboard background color</p>
+<p><strong>Glyph Color</strong> determines the glyph fill color</p>
+<p><strong>Outline Color</strong> determines the glyph outline color</p>
+<p><em>Hint:</em> To turn the <em>fill</em> or <em>outline</em> off, simply set the color’s opacity to 0, rendering it transparent.</p>
+<p><strong>Outline Thickness</strong> determines the thickness of all outlines, including those of the nodes</p>
+<p><strong>Show Nodes</strong> toggle whether you want to draw the Bézier on- and offcurve Points</p>
+<p><strong>Node Shapes</strong> if the Bézier points get drawn, here you can decide with which shape <em>Corner Point</em>, <em>Smooth Corner Point</em> (smooth connection between a line and a curve, think where the shoulder of ‘n’ connects to the stem), <em>Curve Point</em> and <em>Offcurve Point</em> should be represented. The initial values are the canonical RoboFont values (Build 4.6b). </p>
+<p><strong>Node Size</strong> determines the Size of the node shapes</p>
+<p><strong>Node Size Ratio</strong> determines the relationship between on- and offcurve points, default value 1 means they have the same size.</p>
+<p><strong>Nodes = Outline Color</strong> this toggles if all the node colors should simply follow the glyph’s outline color (as of now, the colorwells themselves will not represent this)</p>
+<p><strong>Point and outline colors</strong> after choosing with which shape each node should be represented, here you can choose with which color it should be represented, for each node you can select both a fill and an outline color. <em>Handle Bar</em> represents the connecting line between on- and offcurve-points.</p>
+<p><strong>Remove Overlap</strong> you can turn this off to show the overlaps in your drawing, by default it is turned on.</p>
+<p><strong>Display Coordinates</strong> with this, every on- and offcurve points coordinates will be displayed underneath the respective point, if you have points close to another, this may become a bit cluttered.</p>
+<p><strong>Coordinates Color</strong> choose the text color for the coodinates</p>
+<p><strong>Display Metrics</strong> with this, you can have the font’s vertical metrics displayed with a line in the background. Two small bars on the baseline show the left and right sidebearings.</p>
+<p><strong>Metrics Color</strong> here you can choose the color of both the vertical metrics lines, as well as their respective labels.</p>
+<p><strong>Display Bluezones</strong> with this you have the option to display the font’s bluezone values, as set in the font information. </p>
+<p><strong>Bluezones Color</strong> here you can choose the color for the bluezones.</p>
+<p><strong>Infotext Size</strong> this controls the textsize of both the coordinates, as well as the vertical metrics labels.</p>
+<p><strong>Export as</strong> here you can select the formats you want to export your drawings to. Both <code>SVG</code> and <code>PNG</code> create individual files for each glyph. <code>PNG</code>s get exported with 300ppi.</p>
+<p><strong>Export Path</strong> determines where the images should be exported to, defaults to the folder where your font-file is located.</p>
+<p><em>Hint:</em> in the export process, the script creates a subfolder to collect your drawings, perhaps I could add the option to toggle this behavior on or off.</p>
+<p><strong>Export Button</strong> exports the drawing to the selected filetypes. Each file is saved with a timestamp (like for example macOS screenshots), as well as the font’s family name, style name, and – if applicable – the individual glyph’s name.</p>
+<hr>
+<h2 id="layeroverlayer">LayerOverlayer</h2>
+<p>Overlay Layers!</p>
+<p>LayerOverlayer is a stripped down and modified version of <strong>GlyphShowcaser</strong> with the intent of overlaying all of your layers over each other. 
+Whether that might be different versions, alternate drawings or something else, you can stack it and export it as a PDF, SVG or PNG.</p>
+<p><img src="../resources/LayerOverlayer.png" alt="Screenshot of LayerOverlayer in use"></p>
+<hr>
+<h2 id="fontoverlayer">FontOverlayer</h2>
+<p>Overlay Fonts!</p>
+<p>FontOverlayer is a modified version of <strong>GlyphShowcaser</strong>, using the <strong>LayerOverlayer</strong> logic, overlaying the currently open font files with each other. 
+These could be the styles of one Family or inherently different fonts, you can stack it and export it as a PDF, SVG or PNG.</p>
+<p><img src="../resources/FontOverlayer.png" alt="Screenshot of FontOverlayer in use"></p>
+<hr>
+<h2 id="-a-id-lofocontroldifferences-differences-in-layeroverlayer-and-fontoverlayer-controls-a-"><a id ="LOFOControlDifferences"> Differences in LayerOverlayer and FontOverlayer Controls </a></h2>
+<p>LayerOverlayer and FontOverlayer are stripped down variants of GlyphShowcaser, the controls they share with GlyphShowcaser function the same, and in addition they offer slightly different controls.</p>
+<p>Nodes and Outline always share the same color, as a more granular control would make things more complicated in my opinion.</p>
+<h3 id="layeroverlayer-">LayerOverlayer:</h3>
+<p><strong>Use Layer Colors</strong> with these two checkboxes, you can choose to use the respective layer color (as set in RoboFont) for both the fill and outline; if for example you follow a specific coloring scheme for your layers, you can have it represented here.</p>
+<p><strong>Opacity</strong> you can set the opacity for the layers, if you want to show for example how two versions of a glyph differ.</p>
+<h3 id="fontoverlayer-">FontOverlayer:</h3>
+<p><strong>Tint Fonts</strong> you can choose to tint every font in a different shade and set the intensity of difference in tint.</p>
+<hr>
+<h4 id="requirements">Requirements</h4>
+<p>The scripts requires the <a href="https://github.com/typemytype/drawBotRoboFontExtension">Drawbot extension for RoboFont</a>.</p>
+<hr>
+<h2 id="acknowledgements">Acknowledgements</h2>
+<p>Just van Rossum, Erik van Blokland, Frederik Berlaen for <a href="https://drawbot.com">DrawBot</a></p>
+<p>Frederik Berlaen for the <a href="https://github.com/typemytype/drawBotRoboFontExtension">DrawBot extension for RoboFont</a></p>
+<p>Tal Leming for <a href="https://github.com/robotools/vanilla/">Vanilla</a></p>
