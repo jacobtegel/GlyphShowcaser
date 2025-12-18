@@ -19,6 +19,8 @@ from drawBot.ui.drawView import DrawView
 
 from datetime import datetime
 
+time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+
 font = CurrentFont()
 
 if font is None:
@@ -39,7 +41,7 @@ class LayerOverlayer:
 		self.winWidth = 1000
 		self.winHeight = 1250
 		self.sidebarWidth = 325
-		self.sidebarHeight = 1100
+		self.sidebarHeight = 1135
 
 		self.nodeStackSize = 0
 
@@ -76,43 +78,6 @@ class LayerOverlayer:
 		self.w.controls.marginLabel = TextBox((x1, y, w1, h), 'Margin')
 		self.w.controls.marginSlider = Slider((x2, y, w2-40, h + t), minValue = 0, maxValue = 500, value = 100, callback = self.marginSliderChanged)
 		self.w.controls.marginValue = EditText((w2-35, y, w2, h + t), str(round(float(self.w.controls.marginSlider.get()))), callback = self.marginValueChanged, continuous = False)
-		y += dy + t
-
-		# bg Color
-		self.w.controls.backgroundColorLabel = TextBox((x1, y, w1, h), 'Background Color')
-		self.w.controls.backgroundColor = ColorWell((x2, y, w2, h + 15), callback = self.redraw, color = NSColor.colorWithRed_green_blue_alpha_(0, 0, 0, 0))
-		y += dy + 15
-
-		# fill color
-		self.w.controls.glyphColorLabel = TextBox((x1, y, w1, h), 'Glyph Color')
-		self.w.controls.glyphColor = ColorWell((x2, y, w2, h + 15), callback = self.redraw, color = NSColor.colorWithRed_green_blue_alpha_(1, 1, 1, 0))
-		y += dy + 15
-
-		# outlineColor
-		self.w.controls.outlineColorLabel = TextBox((x1, y, w1, h), 'Node & Outline Color')
-		self.w.controls.outlineColor = ColorWell((x2, y, w2, h + 15), callback = self.redraw, color = NSColor.colorWithRed_green_blue_alpha_(0, 0, 0, 1))
-		y += dy + 15
-
-		# outline thickness
-		self.w.controls.outlineThicknessLabel = TextBox((x1, y, w1, h), 'Outline Thickness')
-		self.w.controls.outlineThicknessSlider = Slider((x2, y, w2-40, h + t), minValue = 1, maxValue = 5, value = 1, callback = self.outlineThicknessSliderChanged)
-		self.w.controls.outlineThicknessValue = EditText((w2-35, y, w2, h + t), str(round(float(self.w.controls.outlineThicknessSlider.get()), 1)), callback = self.outlineThicknessValueChanged, continuous = False)
-		y += dy + t
-
-		# layer color outline
-		self.w.controls.layerColorOutlineLabel = TextBox((x1, y, w1, h), 'Layer Color = Outline')
-		self.w.controls.layerColorOutlineCheck = CheckBox((x2, y, w2, h), '', callback = self.redraw, value = True)
-		y += dy
-
-		# layer color fill
-		self.w.controls.layerColorFillLabel = TextBox((x1, y, w1, h), 'Layer Color = Fill')
-		self.w.controls.layerColorFillCheck = CheckBox((x2, y, w2, h), '', callback = self.redraw, value = False)
-		y += dy
-
-		# opacity
-		self.w.controls.opacityLabel = TextBox((x1, y, w1, h), 'Opacity')
-		self.w.controls.opacitySlider = Slider((x2, y, w2-40, h + t), minValue = 0, maxValue = 1, value = 1, callback = self.opacitySliderChanged)
-		self.w.controls.opacityValue = EditText((w2-35, y, w2, h + t), str(round(float(self.w.controls.opacitySlider.get()), 1)), callback = self.opacityValueChanged, continuous = False)
 		y += dy + t
 
 		# showNodes
@@ -156,10 +121,52 @@ class LayerOverlayer:
 		self.w.controls.nodeSizeRatioValue = EditText((w2-35, y, w2, h + t), str(round(float(self.w.controls.nodeSizeRatioSlider.get()), 1)), callback = self.nodeSizeRatioValueChanged, continuous = False)
 		y += dy + t
 
+		# bg Color
+		self.w.controls.backgroundColorLabel = TextBox((x1, y, w1, h), 'Background Color')
+		self.w.controls.backgroundColor = ColorWell((x2, y, w2, h + 15), callback = self.redraw, color = NSColor.colorWithRed_green_blue_alpha_(0, 0, 0, 0))
+		y += dy + 15
+
+		# fill color
+		self.w.controls.glyphColorLabel = TextBox((x1, y, w1, h), 'Glyph Color')
+		self.w.controls.glyphColor = ColorWell((x2, y, w2, h + 15), callback = self.redraw, color = NSColor.colorWithRed_green_blue_alpha_(1, 1, 1, 0))
+		y += dy + 15
+
+		# glyph Outline
+		self.w.controls.glyphOutlineLabel = TextBox((x1, y, w1, h), 'Glyph Outline')
+		self.w.controls.glyphOutlineCheck = CheckBox((x2, y, w2, h), '', callback = self.redraw, value = True)
+		y += dy
+
+		# use layer Color
+		self.w.controls.useLayerColorLabel = TextBox((x1, y, w1, h), 'Use Layer Color')
+		self.w.controls.useLayerColorCheck = CheckBox((x2, y, w2, h), '', callback = self.redraw, value = True)
+		y += dy
+
+		# fill Glyphs
+		self.w.controls.fillGlyphsLabel = TextBox((x1, y, w1, h), 'Fill Glyphs')
+		self.w.controls.fillGlyphsCheck = CheckBox((x2, y, w2, h), '', callback = self.redraw, value = False)
+		y += dy
+
+		# outlineColor
+		self.w.controls.outlineColorLabel = TextBox((x1, y, w1, h), 'Outline Color')
+		self.w.controls.outlineColor = ColorWell((x2, y, w2, h + 15), callback = self.redraw, color = NSColor.colorWithRed_green_blue_alpha_(0, 0, 0, 1))
+		y += dy + 15
+
+		# outline thickness
+		self.w.controls.outlineThicknessLabel = TextBox((x1, y, w1, h), 'Outline Thickness')
+		self.w.controls.outlineThicknessSlider = Slider((x2, y, w2-40, h + t), minValue = 1, maxValue = 5, value = 1, callback = self.outlineThicknessSliderChanged)
+		self.w.controls.outlineThicknessValue = EditText((w2-35, y, w2, h + t), str(round(float(self.w.controls.outlineThicknessSlider.get()), 1)), callback = self.outlineThicknessValueChanged, continuous = False)
+		y += dy + t
+
 		# removeOverlap
 		self.w.controls.removeOverlapLabel = TextBox((x1, y, w1, h), 'Remove Overlap')
 		self.w.controls.removeOverlapCheck = CheckBox((x2, y, w2, h), '', callback = self.redraw, value = True)
 		y += dy
+
+		# opacity
+		self.w.controls.opacityLabel = TextBox((x1, y, w1, h), 'Opacity')
+		self.w.controls.opacitySlider = Slider((x2, y, w2-40, h + t), minValue = 0, maxValue = 1, value = 1, callback = self.opacitySliderChanged)
+		self.w.controls.opacityValue = EditText((w2-35, y, w2, h + t), str(round(float(self.w.controls.opacitySlider.get()), 1)), callback = self.opacityValueChanged, continuous = False)
+		y += dy + t
 
 		# export as
 		self.w.controls.exportText = TextBox((x1, y, w1, h), 'Export as:')
@@ -267,11 +274,12 @@ class LayerOverlayer:
 
 		# Selected Glyphs    
 		elif glyphSelection == 1:
-			glyphsToProcess = [font[glyph] for glyph in font.selectedGlyphNames]
+			# print(font.selection)
+			glyphsToProcess = [font[glyphName] for glyphName in font.selection]
 			
 		# All glyphs
 		elif glyphSelection == 2:
-			glyphsToProcess = [font[glyph] for glyph in font.glyphOrder]
+			glyphsToProcess = [glyph for glyph in font]
 
 		return glyphsToProcess
 
@@ -311,9 +319,10 @@ class LayerOverlayer:
 		
 		backgroundColor = self.w.controls.backgroundColor.get()
 		glyphColor = self.w.controls.glyphColor.get()
+		glyphOutline = self.w.controls.glyphOutlineCheck.get()
 		
-		layerColorOutline = self.w.controls.layerColorOutlineCheck.get()
-		layerColorFill = self.w.controls.layerColorFillCheck.get()
+		useLayerColor = self.w.controls.useLayerColorCheck.get()
+		fillGlyphs = self.w.controls.fillGlyphsCheck.get()
 
 		outlineColor = self.w.controls.outlineColor.get()
 		outlineThickness = self.w.controls.outlineThicknessSlider.get()
@@ -346,15 +355,13 @@ class LayerOverlayer:
 		for glyph in glyphsToProcess:
 			
 			# Skip empty or None glyphs
-			if glyph is None:
+			if glyph is None or not glyph.contours:
 				continue
-			if not glyph.contours and not glyph.components:
-				continue 
 			
 			glyphHeight = abs(glyph.bounds[1]-glyph.bounds[3])
 			
 			if artboardHeight == 0:
-				height = (font.info.ascender + (margin / 2)) + -(font.info.descender - (margin / 2))
+				height = (font.info.ascender + margin) + -(font.info.descender - (margin / 2))
 			else:
 				height = (glyphHeight + margin)
 				
@@ -368,23 +375,20 @@ class LayerOverlayer:
 			else:
 				drawBot.translate(margin/2, -glyph.bounds[1] + margin / 2)
 
-			for layer in reversed(font.layers):
-				
-				if glyph.name not in layer:
-					continue
+			glyphName = glyph.name  
 
-				# Skip empty or None glyphs
-				if layer[glyph.name] is None:
-					continue
+			for layer in font.layers:
 				
-				if not layer[glyph.name].contours and not layer[glyph.name].components:
-					continue   
+				if glyphName not in layer:
+					continue  
+
+				layerGlyph = layer[glyphName]
 
 				c = layer[glyph.name].copy()
 				
 				if glyph.components:
 					c.clear()
-					layer[glyph.name].drawPoints(DecomposePointPen(layer[glyph.name].font, c.getPointPen()))
+					layer[glyph].drawPoints(DecomposePointPen(layer[glyph].font, c.getPointPen()))
 
 				if removeOverlap:
 					c.removeOverlap()
@@ -392,25 +396,30 @@ class LayerOverlayer:
 				# Extract layer color
 				layerColor = layer.color
 				
-				if layerColorOutline and layerColor:
+				if useLayerColor and layerColor:
 					red, green, blue, _ = layerColor
 					outlineColor = NSColor.colorWithSRGBRed_green_blue_alpha_(red, green, blue, opacity)
 				
 				else:
-					red, green, blue, alpha = outlineColor.redComponent(), outlineColor.greenComponent(), outlineColor.blueComponent(), outlineColor.alphaComponent()
-					outlineColor = NSColor.colorWithSRGBRed_green_blue_alpha_(red, green, blue, (alpha * opacity))
+					red, green, blue = outlineColor.redComponent(), outlineColor.greenComponent(), outlineColor.blueComponent()
+					outlineColor = NSColor.colorWithSRGBRed_green_blue_alpha_(red, green, blue, opacity)
 				
 				drawBot.stroke(outlineColor)
-							
-				if layerColorFill and layerColor:
-					red, green, blue, _ = layerColor
-					fillColor = NSColor.colorWithSRGBRed_green_blue_alpha_(red, green, blue, opacity)
+				
+				if fillGlyphs:
 					
+					if useLayerColor and layerColor:
+						red, green, blue, _ = layerColor
+						fillColor = NSColor.colorWithSRGBRed_green_blue_alpha_(red, green, blue, opacity)
+					
+					else:
+						red, green, blue = glyphColor.redComponent(), glyphColor.greenComponent(), glyphColor.blueComponent()
+						fillColor = NSColor.colorWithSRGBRed_green_blue_alpha_(red, green, blue, opacity)
+						
+					drawBot.fill(fillColor)
+				
 				else:
-					red, green, blue, alpha = glyphColor.redComponent(), glyphColor.greenComponent(), glyphColor.blueComponent(), glyphColor.alphaComponent()
-					fillColor = NSColor.colorWithSRGBRed_green_blue_alpha_(red, green, blue, (alpha * opacity))
-									
-				drawBot.fill(fillColor)
+				    drawBot.fill(None)
 				
 				drawBot.strokeWidth(outlineThickness)
 				
@@ -442,10 +451,10 @@ class LayerOverlayer:
 										
 										# Smooth Corner
 										if point.smooth:
-											self.drawNodes(x, y, s, smoothCornerNodeShape, outlineColor, outlineColor)
+											self.drawNodes(x, y, s, smoothCornerNodeShape, glyphColor, outlineColor)
 										# Corner Point
 										else:
-											self.drawNodes(x, y, s, cornerNodeShape, outlineColor, outlineColor)
+											self.drawNodes(x, y, s, cornerNodeShape, glyphColor, outlineColor)
 
 							elif segment.type == 'curve' and nextSegment.type == 'curve':
 								for point in segment:
@@ -456,10 +465,10 @@ class LayerOverlayer:
 
 										# Curve Point
 										if point.smooth:
-											self.drawNodes(x, y, s, onCurveNodeShape, outlineColor, outlineColor)
+											self.drawNodes(x, y, s, onCurveNodeShape, glyphColor, outlineColor)
 										# Corner Point
 										else:
-											self.drawNodes(x, y, s, cornerNodeShape, outlineColor, outlineColor)
+											self.drawNodes(x, y, s, cornerNodeShape, glyphColor, outlineColor)
 							
 							else:
 								# Corner Point
@@ -467,7 +476,7 @@ class LayerOverlayer:
 									if point.type != 'offcurve':
 										x = point.x 
 										y = point.y 
-										self.drawNodes(x, y, s, cornerNodeShape, outlineColor, outlineColor)
+										self.drawNodes(x, y, s, cornerNodeShape, glyphColor, outlineColor)
 
 							for point in segment:
 
@@ -477,7 +486,7 @@ class LayerOverlayer:
 								# Offcurve Point
 								if point.type == 'offcurve':
 
-									self.drawNodes(x, y, r, offCurveNodeShape, outlineColor, outlineColor)
+									self.drawNodes(x, y, r, offCurveNodeShape, glyphColor, outlineColor)
 		
 		pdf = drawBot.pdfImage()
 
@@ -486,8 +495,6 @@ class LayerOverlayer:
 		drawBot.endDrawing()
 
 	def export(self, sender):
-
-		time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
 
 		url = self.w.pathControl.get()
 
@@ -513,21 +520,17 @@ class LayerOverlayer:
 						for glyph in glyphsToProcess:
 							drawBot.saveImage(f'{export}/{time}-LayerOverlayer-{fontName}-{glyph.name}.pdf')  
 					
-					elif glyphSelection == 1 :
-						for glyph in glyphsToProcess:
-							glyphs = ''
-							glyphs += glyph.name
-						
-						drawBot.saveImage(f'{export}/{time}-LayerOverlayer-{fontName}-{glyphs}.pdf')
-
-					else:  
+					elif glyphSelection == 1:  
 						drawBot.saveImage(f'{export}/{time}-LayerOverlayer-{fontName}.pdf') 
 						
 				if exportSvg == 1:
 
-					for glyph in glyphsToProcess:
-						drawBot.saveImage(f'{export}/{time}-LayerOverlayer-{fontName}-{glyph.name}.svg')
+					if glyphSelection == 0:
+						for glyph in glyphsToProcess:
+							drawBot.saveImage(f'{export}/{time}-LayerOverlayer-{fontName}-{glyph.name}.svg')
 					
+					elif glyphSelection == 1:
+						drawBot.saveImage(f'{export}/{time}-LayerOverlayer-{fontName}-.svg')
 					   
 				if exportPng == 1:
 					for glyph in glyphsToProcess:

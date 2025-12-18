@@ -18,6 +18,8 @@ from drawBot.ui.drawView import DrawView
 
 from datetime import datetime
 
+time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+
 font = CurrentFont()
 
 if font is None:
@@ -38,7 +40,7 @@ class GlyphShowcaser:
 		self.winWidth = 1000
 		self.winHeight = 1250
 		self.sidebarWidth = 325
-		self.sidebarHeight = 1760
+		self.sidebarHeight = 1795
 
 		self.nodeStackSize = 0
 
@@ -65,17 +67,17 @@ class GlyphShowcaser:
 		self.w.controls.glyphSelection.set(0)
 		y += dy + h * 2
 
-		# height
-		self.w.controls.artboardHeightLabel = TextBox((x1, y, w1, h), 'Artboard Height')
-		self.w.controls.artboardHeight = VerticalRadioGroup((x2, y-2.5, w2, h * 2), ['Font Height', 'Glyph Height'], callback = self.redraw)
-		self.w.controls.artboardHeight.set(0)
-		y += dy + h
-
 		# margin
 		self.w.controls.marginLabel = TextBox((x1, y, w1, h), 'Margin')
 		self.w.controls.marginSlider = Slider((x2, y, w2-40, h + t), minValue = 0, maxValue = 500, value = 100, callback = self.marginSliderChanged)
 		self.w.controls.marginValue = EditText((w2-35, y, w2, h + t), str(round(float(self.w.controls.marginSlider.get()))), callback = self.marginValueChanged, continuous = False)
 		y += dy + t
+
+		# height
+		self.w.controls.artboardHeightLabel = TextBox((x1, y, w1, h), 'Artboard Height')
+		self.w.controls.artboardHeight = VerticalRadioGroup((x2, y-2.5, w2, h * 2), ['Font Height', 'Glyph Height'], callback = self.redraw)
+		self.w.controls.artboardHeight.set(0)
+		y += dy + h
 
 		# backgroundColor
 		self.w.controls.backgroundColorLabel = TextBox((x1, y, w1, h), 'Background Color')
@@ -87,9 +89,14 @@ class GlyphShowcaser:
 		self.w.controls.glyphColor = ColorWell((x2, y, w2, h + 15), callback = self.redraw, color=NSColor.clearColor())
 		y += dy + 15
 
+		# glyphOutline
+		self.w.controls.glyphOutlineLabel = TextBox((x1, y, w1, h), 'Glyph Outline')
+		self.w.controls.glyphOutlineCheck = CheckBox((x2, y, w2, h), '', callback = self.redraw, value = True)
+		y += dy
+
 		# outlineColor
 		self.w.controls.outlineColorLabel = TextBox((x1, y, w1, h), 'Outline Color')
-		self.w.controls.outlineColor = ColorWell((x2, y, w2, h + 15), callback = self.outlineColorCallback, color=NSColor.blackColor())
+		self.w.controls.outlineColor = ColorWell((x2, y, w2, h + 15), callback = self.redraw, color=NSColor.blackColor())
 		y += dy + 15
 
 		# outlineThickness
@@ -141,7 +148,7 @@ class GlyphShowcaser:
 
 		# makeNodesOutlineCol
 		self.w.controls.makeNodesOutlineColLabel = TextBox((x1, y, w1, h), 'Nodes = Outline Color')
-		self.w.controls.makeNodesOutlineColCheck = CheckBox((x2, y, w2, h), '', callback = self.outlineColorCallback, value = False)
+		self.w.controls.makeNodesOutlineColCheck = CheckBox((x2, y, w2, h), '', callback = self.makeNodesOutlineColCheckCallback, value = False)
 		y += dy
 
 		
@@ -265,26 +272,6 @@ class GlyphShowcaser:
 		self.w.controls.marginSlider.set(v)
 		self.redraw(sender)
 
-	def outlineColorCallback(self, sender):
-		if self.w.controls.makeNodesOutlineColCheck.get():
-			outlineColor = self.w.controls.outlineColor.get()
-
-			self.w.controls.cornerPointColor.set(outlineColor)
-			self.w.controls.cornerStrokeColor.set(outlineColor)
-
-			self.w.controls.smoothCornerPointColor.set(outlineColor)
-			self.w.controls.smoothCornerStrokeColor.set(outlineColor)
-
-			self.w.controls.onCurvePointColor.set(outlineColor)
-			self.w.controls.onCurveStrokeColor.set(outlineColor)
-
-			self.w.controls.offCurvePointColor.set(outlineColor)
-			self.w.controls.offCurveStrokeColor.set(outlineColor)
-
-			self.w.controls.handleBarColor.set(outlineColor)
-
-		self.redraw(sender)
-
 	def outlineThicknessSliderChanged(self, sender):
 		v = round(float(self.w.controls.outlineThicknessSlider.get()), 1)
 		self.w.controls.outlineThicknessValue.set(str(v))
@@ -313,6 +300,9 @@ class GlyphShowcaser:
 	def nodeSizeRatioValueChanged(self, sender):
 		v = round(float(self.w.controls.nodeSizeRatioValue.get()), 1)
 		self.w.controls.nodeSizeRatioSlider.set(v)
+		self.redraw(sender)
+
+	def makeNodesOutlineColCheckCallback(self, sender):
 		self.redraw(sender)
 
 	def displayCoordinatesCheckCallback(self, sender):
@@ -360,11 +350,11 @@ class GlyphShowcaser:
 
 		# Selected glyphs    
 		elif glyphSelection == 1:
-			glyphsToProcess = [font[glyph] for glyph in font.selectedGlyphNames]
+			glyphsToProcess = [font[glyphName] for glyphName in font.selectedGlyphNames]
 
 		# All glyphs
 		elif glyphSelection == 2:
-			glyphsToProcess = [font[glyph] for glyph in font.glyphOrder]
+			glyphsToProcess = [glyph for glyph in font]
 
 		return glyphsToProcess
 
@@ -412,6 +402,7 @@ class GlyphShowcaser:
 		
 		backgroundColor = self.w.controls.backgroundColor.get()
 		glyphColor = self.w.controls.glyphColor.get()
+		glyphOutline = self.w.controls.glyphOutlineCheck.get()
 		
 		outlineColor = self.w.controls.outlineColor.get()
 		outlineThickness = self.w.controls.outlineThicknessSlider.get()
@@ -465,14 +456,12 @@ class GlyphShowcaser:
 			
 			# Skip empty or None glyphs
 			if glyph is None:
-				continue
-			if not glyph.contours and not glyph.components:
-				continue 
+				continue		
 
-			glyphHeight = abs(glyph.bounds[1] - glyph.bounds[3])
+			glyphHeight = abs(glyph.bounds[1]-glyph.bounds[3])
 
 			if artboardHeight == 0:
-				height = (font.info.ascender + (margin / 2)) + -(font.info.descender - (margin / 2))
+				height = (font.info.ascender + margin) + -(font.info.descender - (margin / 2))
 			else:
 				height = (glyphHeight + margin)
 
@@ -488,7 +477,7 @@ class GlyphShowcaser:
 				drawBot.translate(margin/2, -font.info.descender + (margin / 2))
 			
 			else:
-				drawBot.translate(margin/2, -glyph.bounds[1] + (margin / 2))
+				drawBot.translate(margin/2, -glyph.bounds[1] + margin / 2)
 			
 			if displayMetrics:
 				drawBot.stroke(metricsColor)
@@ -544,8 +533,10 @@ class GlyphShowcaser:
 			   c.removeOverlap()
 
 			drawBot.fill(glyphColor)
-			drawBot.stroke(outlineColor)
-			drawBot.strokeWidth(outlineThickness)
+			
+			if glyphOutline:
+				drawBot.stroke(outlineColor)
+				drawBot.strokeWidth(outlineThickness)
 
 			if makeNodesOutlineColor == 1:
 				onCurveStrokeColor = outlineColor
@@ -649,8 +640,6 @@ class GlyphShowcaser:
 
 	def export(self, sender):
 
-		time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-
 		url = self.w.pathControl.get()
 
 		glyphSelection = self.w.controls.glyphSelection.get()
@@ -675,26 +664,24 @@ class GlyphShowcaser:
 						for glyph in glyphsToProcess:
 							drawBot.saveImage(f'{export}/{time}-GlyphShowcaser-{fontName}-{glyph.name}.pdf')  
 					
-					elif glyphSelection == 1 :
-						for glyph in glyphsToProcess:
-							glyphs = ''
-							glyphs += glyph.name
-						
-						drawBot.saveImage(f'{export}/{time}-LayerOverlayer-{fontName}-{glyphs}.pdf')
-
-					else:  
+					elif glyphSelection == 1:  
 						drawBot.saveImage(f'{export}/{time}-GlyphShowcaser-{fontName}.pdf') 
 						
 				if exportSvg == 1:
 
-					for glyph in glyphsToProcess:
-						drawBot.saveImage(f'{export}/{time}-GlyphShowcaser-{fontName}-{glyph.name}.svg')
+					if glyphSelection == 0:
+						for glyph in glyphsToProcess:
+							drawBot.saveImage(f'{export}/{time}-GlyphShowcaser-{fontName}-{glyph.name}.svg')
+					
+					elif glyphSelection == 1:
+						drawBot.saveImage(f'{export}/{time}-GlyphShowcaser-{fontName}-.svg')
 					   
 				if exportPng == 1:
 					for glyph in glyphsToProcess:
 						drawBot.saveImage(f'{export}/{time}-GlyphShowcaser-{fontName}-{glyph.name}.png', imageResolution=300)
 
 			except Exception as e:
+				
 				Message(f'Export Failed', informativeText = str(e))
 
 	def close(self, sender):
