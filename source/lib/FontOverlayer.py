@@ -18,8 +18,6 @@ from drawBot.ui.drawView import DrawView
 
 from datetime import datetime
 
-time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-
 fonts = AllFonts()
 
 if not fonts:
@@ -42,7 +40,7 @@ class FontOverlayer:
 		self.winWidth = 1000
 		self.winHeight = 1250
 		self.sidebarWidth = 325
-		self.sidebarHeight = 1170
+		self.sidebarHeight = 1135
 
 		self.nodeStackSize = 0
 
@@ -87,6 +85,38 @@ class FontOverlayer:
 		self.w.controls.marginValue = EditText((w2-35, y, w2, h + t), str(round(float(self.w.controls.marginSlider.get()))), callback = self.marginValueChanged, continuous = False)
 		y += dy + t
 
+		# bg Color
+		self.w.controls.backgroundColorLabel = TextBox((x1, y, w1, h), 'Background Color')
+		self.w.controls.backgroundColor = ColorWell((x2, y, w2, h + 15), callback = self.redraw, color = NSColor.colorWithRed_green_blue_alpha_(0, 0, 0, 0))
+		y += dy + 15
+
+		# fill color
+		self.w.controls.glyphColorLabel = TextBox((x1, y, w1, h), 'Glyph Color')
+		self.w.controls.glyphColor = ColorWell((x2, y, w2, h + 15), callback = self.redraw, color = NSColor.colorWithRed_green_blue_alpha_(1, 1, 1, 0))
+		y += dy + 15
+
+		# outlineColor
+		self.w.controls.outlineColorLabel = TextBox((x1, y, w1, h), 'Node & Outline Color')
+		self.w.controls.outlineColor = ColorWell((x2, y, w2, h + 15), callback = self.redraw, color = NSColor.colorWithRed_green_blue_alpha_(0, 0, 0, 1))
+		y += dy + 15
+
+		# outline thickness
+		self.w.controls.outlineThicknessLabel = TextBox((x1, y, w1, h), 'Outline Thickness')
+		self.w.controls.outlineThicknessSlider = Slider((x2, y, w2-40, h + t), minValue = 1, maxValue = 5, value = 1, callback = self.outlineThicknessSliderChanged)
+		self.w.controls.outlineThicknessValue = EditText((w2-35, y, w2, h + t), str(round(float(self.w.controls.outlineThicknessSlider.get()), 1)), callback = self.outlineThicknessValueChanged, continuous = False)
+		y += dy + t
+
+		# tint fonts
+		self.w.controls.tintFontsLabel = TextBox((x1, y, w1, h), 'Tint Fonts')
+		self.w.controls.tintFontsCheck = CheckBox((x2, y, w2, h), '', callback = self.redraw, value = True)
+		y += dy
+
+		# tint intensity
+		self.w.controls.tintIntensityLabel = TextBox((x1, y, w1, h), 'Tint Intensity')
+		self.w.controls.tintIntensitySlider = Slider((x2, y, w2-40, h + t), minValue = 0, maxValue = 1, value = .5, callback = self.tintIntensitySliderChanged)
+		self.w.controls.tintIntensityValue = EditText((w2-35, y, w2, h + t), str(round(float(self.w.controls.tintIntensitySlider.get()), 1)), callback = self.tintIntensityValueChanged, continuous = False)
+		y += dy + t
+
 		# showNodes
 		self.w.controls.showNodesLabel = TextBox((x1, y, w1, h), 'Show Nodes')
 		self.w.controls.showNodesCheck = CheckBox((x2, y, w2, h), '', callback = self.redraw, value = True)
@@ -128,47 +158,10 @@ class FontOverlayer:
 		self.w.controls.nodeSizeRatioValue = EditText((w2-35, y, w2, h + t), str(round(float(self.w.controls.nodeSizeRatioSlider.get()), 1)), callback = self.nodeSizeRatioValueChanged, continuous = False)
 		y += dy + t
 
-		# bg Color
-		self.w.controls.backgroundColorLabel = TextBox((x1, y, w1, h), 'Background Color')
-		self.w.controls.backgroundColor = ColorWell((x2, y, w2, h + 15), callback = self.redraw, color = NSColor.colorWithRed_green_blue_alpha_(0, 0, 0, 0))
-		y += dy + 15
-
-		# fill color
-		self.w.controls.glyphColorLabel = TextBox((x1, y, w1, h), 'Glyph Color')
-		self.w.controls.glyphColor = ColorWell((x2, y, w2, h + 15), callback = self.redraw, color = NSColor.colorWithRed_green_blue_alpha_(1, 1, 1, 0))
-		y += dy + 15
-
-		# glyph Outline
-		self.w.controls.glyphOutlineLabel = TextBox((x1, y, w1, h), 'Glyph Outline')
-		self.w.controls.glyphOutlineCheck = CheckBox((x2, y, w2, h), '', callback = self.redraw, value = True)
-		y += dy
-
-		# outlineColor
-		self.w.controls.outlineColorLabel = TextBox((x1, y, w1, h), 'Outline Color')
-		self.w.controls.outlineColor = ColorWell((x2, y, w2, h + 15), callback = self.redraw, color = NSColor.colorWithRed_green_blue_alpha_(0, 0, 0, 1))
-		y += dy + 15
-
-		# outline thickness
-		self.w.controls.outlineThicknessLabel = TextBox((x1, y, w1, h), 'Outline Thickness')
-		self.w.controls.outlineThicknessSlider = Slider((x2, y, w2-40, h + t), minValue = 1, maxValue = 5, value = 1, callback = self.outlineThicknessSliderChanged)
-		self.w.controls.outlineThicknessValue = EditText((w2-35, y, w2, h + t), str(round(float(self.w.controls.outlineThicknessSlider.get()), 1)), callback = self.outlineThicknessValueChanged, continuous = False)
-		y += dy + t
-
 		# removeOverlap
 		self.w.controls.removeOverlapLabel = TextBox((x1, y, w1, h), 'Remove Overlap')
 		self.w.controls.removeOverlapCheck = CheckBox((x2, y, w2, h), '', callback = self.redraw, value = True)
 		y += dy
-
-		# tint fonts
-		self.w.controls.tintFontsLabel = TextBox((x1, y, w1, h), 'Tint Fonts')
-		self.w.controls.tintFontsCheck = CheckBox((x2, y, w2, h), '', callback = self.redraw, value = True)
-		y += dy
-
-		# tint intensity
-		self.w.controls.tintIntensityLabel = TextBox((x1, y, w1, h), 'Tint Intensity')
-		self.w.controls.tintIntensitySlider = Slider((x2, y, w2-40, h + t), minValue = 0, maxValue = 1, value = .5, callback = self.tintIntensitySliderChanged)
-		self.w.controls.tintIntensityValue = EditText((w2-35, y, w2, h + t), str(round(float(self.w.controls.tintIntensitySlider.get()), 1)), callback = self.tintIntensityValueChanged, continuous = False)
-		y += dy + t
 
 		# export as
 		self.w.controls.exportText = TextBox((x1, y, w1, h), 'Export as:')
@@ -276,7 +269,7 @@ class FontOverlayer:
 
 		# Selected glyphs    
 		elif glyphSelection == 1:
-			glyphsToProcess = [fonts[0].selectedGlyphNames]
+			glyphsToProcess = [*fonts[0].selectedGlyphNames]
 
 		# All glyphs
 		elif glyphSelection == 2:
@@ -322,7 +315,6 @@ class FontOverlayer:
 		
 		backgroundColor = self.w.controls.backgroundColor.get()
 		glyphColor = self.w.controls.glyphColor.get()
-		glyphOutline = self.w.controls.glyphOutlineCheck.get()
 		
 		outlineColor = self.w.controls.outlineColor.get()
 		outlineThickness = self.w.controls.outlineThicknessSlider.get()
@@ -359,7 +351,7 @@ class FontOverlayer:
 			glyphs = []
 			for font in reversed(fonts):
 				try: 
-					if glyph in font and font[glyph] is not None:
+					if glyph in font and font[glyph] is not None and (font[glyph].contours or font[glyph].components):
 						glyphs.append(font[glyph])
 				except Exception as e:
 					Message('Error', informativeText = str(e))
@@ -502,13 +494,7 @@ class FontOverlayer:
 						glyphColor = glyphColor
 						outlineColor = outlineColor
 					
-					drawBot.fill(glyphColor)
-					
-					if glyphOutline:
-						outlineColor = outlineColor
-					else:
-						outlineColor = None
-					
+					drawBot.fill(glyphColor)					
 					drawBot.stroke(outlineColor)
 					drawBot.strokeWidth(outlineThickness)				
 					
@@ -539,10 +525,10 @@ class FontOverlayer:
 											
 											# Smooth Corner
 											if point.smooth:
-												self.drawNodes(x, y, s, smoothCornerNodeShape, glyphColor, outlineColor, idx)
+												self.drawNodes(x, y, s, smoothCornerNodeShape, outlineColor, outlineColor, idx)
 											# Corner Point
 											else:
-												self.drawNodes(x, y, s, cornerNodeShape, glyphColor, outlineColor, idx)
+												self.drawNodes(x, y, s, cornerNodeShape, outlineColor, outlineColor, idx)
 
 								elif segment.type == 'curve' and nextSegment.type == 'curve':
 									for point in segment:
@@ -553,10 +539,10 @@ class FontOverlayer:
 
 											# Curve Point
 											if point.smooth:
-												self.drawNodes(x, y, s, onCurveNodeShape, glyphColor, outlineColor, idx)
+												self.drawNodes(x, y, s, onCurveNodeShape, outlineColor, outlineColor, idx)
 											# Corner Point
 											else:
-												self.drawNodes(x, y, s, cornerNodeShape, glyphColor, outlineColor, idx)
+												self.drawNodes(x, y, s, cornerNodeShape, outlineColor, outlineColor, idx)
 								
 								else:
 									# Corner Point
@@ -564,7 +550,7 @@ class FontOverlayer:
 										if point.type != 'offcurve':
 											x = point.x 
 											y = point.y 
-											self.drawNodes(x, y, s, cornerNodeShape, glyphColor, outlineColor, idx)
+											self.drawNodes(x, y, s, cornerNodeShape, outlineColor, outlineColor, idx)
 
 								for point in segment:
 
@@ -574,7 +560,7 @@ class FontOverlayer:
 									# Offcurve Point
 									if point.type == 'offcurve':
 
-										self.drawNodes(x, y, r, offCurveNodeShape, glyphColor, outlineColor, idx)
+										self.drawNodes(x, y, r, offCurveNodeShape, outlineColor, outlineColor, idx)
 
 		pdf = drawBot.pdfImage()
 
@@ -583,6 +569,8 @@ class FontOverlayer:
 		drawBot.endDrawing()
 
 	def export(self, sender):
+
+		time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
 
 		url = self.w.pathControl.get()
 
@@ -608,17 +596,20 @@ class FontOverlayer:
 						for glyph in glyphsToProcess:
 							drawBot.saveImage(f'{export}/{time}-FontOverlayer-{fontName}-{glyph}.pdf')  
 					
-					elif glyphSelection == 1:  
+					elif glyphSelection == 1 :
+						for glyph in glyphsToProcess:
+							glyphs = ''
+							glyphs += glyph
+						
+						drawBot.saveImage(f'{export}/{time}-LayerOverlayer-{fontName}-{glyphs}.pdf')
+
+					else:  
 						drawBot.saveImage(f'{export}/{time}-FontOverlayer-{fontName}.pdf') 
 						
 				if exportSvg == 1:
 
-					if glyphSelection == 0:
-						for glyph in glyphsToProcess:
-							drawBot.saveImage(f'{export}/{time}-FontOverlayer-{fontName}-{glyph}.svg')
-					
-					elif glyphSelection == 1:
-						drawBot.saveImage(f'{export}/{time}-FontOverlayer-{fontName}-.svg')
+					for glyph in glyphsToProcess:
+						drawBot.saveImage(f'{export}/{time}-FontOverlayer-{fontName}-{glyph}.svg')
 					   
 				if exportPng == 1:
 					for glyph in glyphsToProcess:

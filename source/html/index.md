@@ -1,4 +1,4 @@
-<img src="/source/resources/GlyphShowcaser-icon.png" alt="GlyphShowcaser icon" width = "100">
+<img src="../resources/GlyphShowcaser-icon.png" alt="GlyphShowcaser icon" width = "100">
 
 # GlyphShowcaser
 
@@ -19,7 +19,7 @@ Showcase your Drawings!
 Tool to showcase your Glyphs and export it as PDF, SVG or PNG.
 You can change colors, Node Shapes and more!
 
-![Screenshot of GlyphShowcaser in use](/source/resources/GlyphShowcaser.png)
+![Screenshot of GlyphShowcaser in use](../resources/GlyphShowcaser.png)
 
 ---
 
@@ -34,8 +34,6 @@ You can zoom in and out with a Trackpad, or `cmd +` and `cmd -`
 On the right side of the interface are the different controls for the script, here is where you can choose how you want your drawing to look like.
 
 **Glyph Selection** determines which glyph or glyphs get drawn, can be set to *Current Glyph*, *Selected Glyphs* or *All Glyphs*, depending on the use
-
-*Hint:* if you want to process *all* glyphs, it is advisable to adjust the settings with only one or a few glyphs and changing it to *All Glyphs* only for the export, as it gets quite slow.
 
 **Margin** adds padding between the glyph and the edges of the artboard
 
@@ -96,7 +94,7 @@ Overlay Layers!
 LayerOverlayer is a stripped down and modified version of __GlyphShowcaser__ with the intent of overlaying all of your layers over each other. 
 Whether that might be different versions, alternate drawings or something else, you can stack it and export it as a PDF, SVG or PNG.
 
-![Screenshot of LayerOverlayer in use](/source/resources/LayerOverlayer.png)
+![Screenshot of LayerOverlayer in use](../resources/LayerOverlayer.png)
 
 ---
 
@@ -107,7 +105,7 @@ Overlay Fonts!
 FontOverlayer is a modified version of __GlyphShowcaser__, using the __LayerOverlayer__ logic, overlaying the currently open font files with each other. 
 These could be the styles of one Family or inherently different fonts, you can stack it and export it as a PDF, SVG or PNG.
 
-![Screenshot of FontOverlayer in use](/source/resources/FontOverlayer.png)
+![Screenshot of FontOverlayer in use](../resources/FontOverlayer.png)
 
 ---
 
